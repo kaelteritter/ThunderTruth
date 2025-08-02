@@ -2,8 +2,7 @@
 import logging
 from typing import Any
 from core.exceptions import InvalidCellValueError, OccupiedCellError
-from core.elements import Element
-from core.tokens import Empty
+from core.elements import Element, Empty
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +65,7 @@ class Cell:
             raise InvalidCellValueError('Значение клетки должно быть подклассом Element')
         
         # В клетке находится заглушка или операнд
-        if self._value.is_immutable():
+        if self._value.is_immutable() and not self.is_empty:
             logger.warning('Попытка разместиться в недоступной клетке')
             raise OccupiedCellError('Нельзя разместить в клетке неизменяемый элемент')
         

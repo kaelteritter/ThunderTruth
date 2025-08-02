@@ -15,3 +15,6 @@ class Stub(Element):
     def is_immutable(self) -> bool:
         return True
 
+class Empty(Element):
+    def is_immutable(self) -> bool:
+        return True
