@@ -2,7 +2,7 @@
 import logging
 from typing import Any
 from core.exceptions import InvalidCellValueError, OccupiedCellError
-from core.elements import Element, Empty
+from core.elements import Element, Empty, Stub
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +16,8 @@ class Cell:
     # ISP: минимальный интерфейс (value, is_empty, set_value, clear), не навязывает лишних методов
     # DIP: зависит от абстракции Element, а не от конкретных реализаций Token, Operand или Stub
     """
-    def __init__(self) -> None:
-        self._value: Element = Empty()
+    def __init__(self, stub=False) -> None:
+        self._value: Element = Empty() if not stub else Stub()
 
     @property
     def value(self) -> Element:
@@ -25,7 +25,7 @@ class Cell:
         return self._value
     
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Проверяет, пуста ли клетка (содержит Empty)."""
         return isinstance(self._value, Empty)
     
