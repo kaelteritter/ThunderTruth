@@ -53,7 +53,7 @@ class Cell:
         self._value = value
         return True
     
-    def _validate_mutable(self, value: Any):
+    def _validate_mutable(self, value: Element):
         # Переданное значение - неизменяемый элемент
         if isinstance(value, Element) and value.is_immutable():
             logger.warning(f'Попытка разместить в клетку неизменяемый тип Element: {value}')
