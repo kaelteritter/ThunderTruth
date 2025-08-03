@@ -4,8 +4,9 @@ import logging
 from typing import Any
 from core import settings
 from core.cells import Cell
-from core.exceptions import InvalidCellCoordinateError, InvalidOperandError, OccupiedCellError
+from core.exceptions import InvalidCellCoordinateError, InvalidOperandError, InvalidTokenError, OccupiedCellError
 from core.operands import Operand
+from core.tokens import Token
 
 
 logger = logging.getLogger(__name__)
@@ -17,9 +18,9 @@ class Board:
     def __init__(self, size: int = settings.BOARD_SIZE) -> None:
         self.size: int = size
         self.buffered_size: int = size + 2
-        self.grid: list[list] = self.initialize()
+        self.grid: list[list[Cell]] = self.initialize()
 
-    def initialize(self):
+    def initialize(self) -> list[list[Cell]]:
         """
         Инициализация доски с пустыми клетками и буфером из заглушек
         """
@@ -66,4 +67,24 @@ class Board:
         self._validate_operand_placement(operand, row, col)
         self.get_cell(row, col)._assign_value(operand)
         logger.debug(f"Операнд {operand.get_value()} размещен в клетке ({row}, {col})")
+        return True
+    
+    def _validate_token_placement(self, token: Token, row: int, col: int) -> None:
+        cell = self.get_cell(row, col)
+
+        if not isinstance(token, Token):
+            logger.warning(f"Попытка разместить не токен: {token}")
+            raise InvalidTokenError('Токен должен быть подклассом Token')
+        
+        if not cell.is_empty:
+            logger.warning(f"Попытка разместить токен в занятую клетку ({row}, {col})")
+            raise OccupiedCellError("Клетка уже содержит элемент")
+    
+    def place_token(self, token: Token, row: int, col: int) -> bool:
+        """
+        Метод для размещения токенов-операторов
+        """
+        self._validate_token_placement(token, row, col)
+        self.get_cell(row, col).set_value(token)
+        logger.debug(f"Токен {token.to_string()} размещен в клетке ({row}, {col})")
         return True
