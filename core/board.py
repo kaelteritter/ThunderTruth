@@ -32,3 +32,9 @@ class Board:
             )
 
         return grid
+    
+    def get_cell(self, row, col) -> Cell:
+        """
+        Возвращает объект Cell игрового поля
+        """
+        return self.grid[row][col]
