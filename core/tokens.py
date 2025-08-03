@@ -4,11 +4,15 @@ import logging
 from core.elements import Element
 from core.exceptions import InvalidOperandError
 from core.operands import Operand
+# from core.players import Player
 
 
 logger = logging.getLogger(__name__)
 
 class Token(Element):
+    def __init__(self, owner=None) -> None:
+        self._owner = owner
+
     def is_immutable(self) -> bool:
         return False
     
@@ -16,6 +20,9 @@ class Token(Element):
         if not isinstance(value1, Operand) or not isinstance(value2, Operand):
             logger.warning(f"Попытка передать в evaluate() значения не Operand: {value1, value2}")
             raise InvalidOperandError('Операнды могут быть только подклассами Operand')
+        
+    def get_owner(self):
+        return self._owner
     
     @abstractmethod
     def get_truth_table(self) -> dict:

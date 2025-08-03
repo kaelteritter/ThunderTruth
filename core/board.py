@@ -5,8 +5,13 @@ import random
 from typing import Any
 from core import settings
 from core.cells import Cell
-from core.exceptions import InvalidCellCoordinateError, InvalidOperandError, InvalidTokenError, OccupiedCellError
+from core.exceptions import (
+    InvalidCellCoordinateError, InvalidOperandError, 
+    InvalidTokenError, OccupiedCellError,
+    InvalidPlayerError
+)
 from core.operands import FalseOperand, Operand, TrueOperand
+from core.players import Player
 from core.tokens import Token
 
 
@@ -102,4 +107,15 @@ class Board:
         self._validate_token_placement(token, row, col)
         self.get_cell(row, col).set_value(token)
         logger.debug(f"Токен {token.to_string()} размещен в клетке ({row}, {col})")
+        return True
+    
+    def _validate_move(self, token: Token, row: int, col: int):       
+        if not isinstance(token, Token):
+            logger.warning(f'Попытка сделать ход не токеном: тип {type(token)}')
+            raise InvalidTokenError('Токен должен быть подклассом Token')
+    
+    def make_move(self, token: Token, row: int, col: int) -> bool:
+        self._validate_move(token, row, col)
+        self.place_token(token, row, col)
+        logger.info(f'Игрок {token.get_owner()} установил токен {token.to_string()} в клетку ({row}, {col})')
         return True
