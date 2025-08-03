@@ -1,11 +1,12 @@
 # core/board.py
 
 import logging
+import random
 from typing import Any
 from core import settings
 from core.cells import Cell
 from core.exceptions import InvalidCellCoordinateError, InvalidOperandError, InvalidTokenError, OccupiedCellError
-from core.operands import Operand
+from core.operands import FalseOperand, Operand, TrueOperand
 from core.tokens import Token
 
 
@@ -36,6 +37,20 @@ class Board:
             )
 
         return grid
+    
+    def setup(self) -> bool:
+        """Расстановка случайных операндов на поле"""
+        for row in range(1, self.size + 1):
+            for col in range(1, self.size + 1):
+
+                # расстановка в шахматном порядке
+                if (row + col) % 2 == 0:
+                    operand = TrueOperand() if random.choice([True, False]) else FalseOperand()
+                    self._place_operand(operand, row, col)
+
+        logger.info('Игровое поле успешно создано.')
+        return True
+
     
     def _validate_coordinate(self, row: int, col: int) -> None:
         if not 1 <= row <= self.size or not 1 <= col <= self.size:
