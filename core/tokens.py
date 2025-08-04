@@ -1,6 +1,7 @@
 # core/tokens.py
 from abc import abstractmethod
 import logging
+import uuid
 from core.elements import Element
 from core.exceptions import InvalidOperandError
 from core.operands import Operand
@@ -12,6 +13,10 @@ logger = logging.getLogger(__name__)
 class Token(Element):
     def __init__(self, owner=None) -> None:
         self._owner = owner
+        self._id = str(uuid.uuid4())
+
+    def get_id(self):
+        return self._id
 
     def is_immutable(self) -> bool:
         return False
