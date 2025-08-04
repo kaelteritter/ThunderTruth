@@ -1,7 +1,8 @@
 # core/tokens.py
 from abc import abstractmethod
 import logging
-import uuid
+import secrets
+import string
 from core.elements import Element
 from core.exceptions import InvalidOperandError
 from core.operands import Operand
@@ -13,7 +14,18 @@ logger = logging.getLogger(__name__)
 class Token(Element):
     def __init__(self, owner=None) -> None:
         self._owner = owner
-        self._id = str(uuid.uuid4())
+        self._id = None
+        self._prefix = 'token'
+
+    @staticmethod
+    def _generate_id(prefix='', length=10) -> str:
+        """
+        Возвращает случайный id с префиксом
+        По умолчанию случайный набор из букв и цифр длиной 10
+        """
+        characters = string.ascii_letters + string.digits
+        suffix = ''.join(secrets.choice(characters) for _ in range(length))
+        return '_'.join(['token', prefix, suffix])
 
     def get_id(self):
         return self._id
@@ -45,8 +57,21 @@ class Token(Element):
         """Возвращает строковое представление токена."""
         pass
 
+    def __hash__(self) -> int:
+        return hash(self.get_id())
+    
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Token):
+            return False
+        return self.get_id() == other.get_id()
+
 
 class AND(Token):
+    def __init__(self, owner=None) -> None:
+        super().__init__(owner)
+        self._prefix = 'and'
+        self._id = self._generate_id(self._prefix)
+
     def get_truth_table(self) -> dict:
         return {
             (True, True): True,
@@ -60,6 +85,11 @@ class AND(Token):
 
 
 class OR(Token):
+    def __init__(self, owner=None) -> None:
+        super().__init__(owner)
+        self._prefix = 'or'
+        self._id = self._generate_id(self._prefix)
+
     def get_truth_table(self) -> dict:
         return {
             (True, True): True,
@@ -72,6 +102,11 @@ class OR(Token):
         return 'v'
 
 class XOR(Token):
+    def __init__(self, owner=None) -> None:
+        super().__init__(owner)
+        self._prefix = 'xor'
+        self._id = self._generate_id(self._prefix)
+
     def get_truth_table(self) -> dict:
         return {
             (True, True): False,
@@ -85,6 +120,11 @@ class XOR(Token):
 
 
 class IMP(Token):
+    def __init__(self, owner=None) -> None:
+        super().__init__(owner)
+        self._prefix = 'imp'
+        self._id = self._generate_id(self._prefix)
+
     def get_truth_table(self) -> dict:
         return {
             (True, True): True,
