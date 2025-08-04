@@ -8,10 +8,8 @@ from core.cells import Cell
 from core.exceptions import (
     InvalidCellCoordinateError, InvalidOperandError, 
     InvalidTokenError, OccupiedCellError,
-    InvalidPlayerError
 )
 from core.operands import FalseOperand, Operand, TrueOperand
-from core.players import Player
 from core.tokens import Token
 
 
@@ -115,6 +113,9 @@ class Board:
             raise InvalidTokenError('Токен должен быть подклассом Token')
     
     def make_move(self, token: Token, row: int, col: int) -> bool:
+        """
+        Метод для обработки хода игроком. Владелец определяется через атрибут токена.
+        """
         self._validate_move(token, row, col)
         self.place_token(token, row, col)
         logger.info(f'Игрок {token.get_owner()} установил токен {token.to_string()} в клетку ({row}, {col})')
