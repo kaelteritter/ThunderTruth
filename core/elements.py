@@ -24,11 +24,11 @@ class Stub(Element):
         return True
     
     def to_string(self) -> str:
-        return '*'
+        return '#'
 
 class Empty(Element):
     def is_immutable(self) -> bool:
         return True
     
     def to_string(self) -> str:
-        return ' '
+        return '.'

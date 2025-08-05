@@ -134,5 +134,5 @@ class IMP(Token):
         }
     
     def to_string(self) -> str:
-        return '->'
+        return '⇒'
 
