@@ -1,7 +1,7 @@
 # core/cells.py
 import logging
 from typing import Any
-from core.exceptions import InvalidCellValueError, OccupiedCellError
+from core.exceptions import InvalidCellValueError, CellOccupiedError
 from core.elements import Element, Empty, Stub
 
 logger = logging.getLogger(__name__)
@@ -67,9 +67,9 @@ class Cell:
         # В клетке находится заглушка или операнд
         if self._value.is_immutable() and not self.is_empty:
             logger.warning('Попытка разместиться в недоступной клетке')
-            raise OccupiedCellError('Нельзя разместить в клетке неизменяемый элемент')
+            raise CellOccupiedError('Нельзя разместить в клетке неизменяемый элемент')
         
         # В клетке находится движимый элемент игры (например, токен)
         if not self.is_empty:
             logger.warning('Попытка разместиться в занятой клетке')
-            raise OccupiedCellError(f'Эта клетка уже занята')
+            raise CellOccupiedError(f'Эта клетка уже занята')
