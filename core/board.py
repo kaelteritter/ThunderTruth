@@ -7,7 +7,7 @@ from core import settings
 from core.cells import Cell
 from core.exceptions import (
     CellOutOfBorderError, InvalidOperandError, 
-    InvalidTokenError, CellOccupiedError,
+    TokenInvalidError, CellOccupiedError,
     BoardCoordinateTypeError,
 )
 from core.operands import FalseOperand, Operand, TrueOperand
@@ -141,7 +141,7 @@ class Board:
 
         if not isinstance(token, Token):
             logger.warning(f"Попытка разместить токен не типа Token: {token}")
-            raise InvalidTokenError('Токен должен быть подклассом Token')
+            raise TokenInvalidError('Токен должен быть подклассом Token')
         
         if not cell.is_empty:
             logger.warning(f"Попытка разместить токен в занятую клетку ({row}, {col})")
@@ -157,4 +157,12 @@ class Board:
             f'Размещение к клетке ({row}, {col}) -> '
             f'успешно размещен токен {token.to_string()} c id:{token.get_id()}'
         )
+
+    def get_neighbors(self, row: int, col: int):
+        neighbor_coords = [
+                    (-1, 0),  
+            (0, -1),         (0, 1),
+                     (1, 0),
+        ]
+        return [self.get_cell_buffered(row + dx, col + dy) for dx, dy in neighbor_coords]
 
