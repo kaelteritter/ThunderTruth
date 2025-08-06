@@ -6,7 +6,6 @@ from typing import Callable
 
 from core import settings
 from core.exceptions import InputHandlerDataError
-from core.players import Player
 from core.tokens import AND, IMP, OR, XOR, Token
 
 
@@ -43,30 +42,30 @@ class ConsoleInputHandler(InputHandler):
         }
     def get_player_token_choice(self, tokens_amount=settings.INITIAL_TOKENS) -> list[Token]:
         tokens = []
-        i = 1
-        while i <= tokens_amount:
-            try:
-                token_str = input(f"Выберите токен {i}: ").strip().upper()
-                token_type = self.tokens_map.get(token_str)
-                if not token_type:
-                    logger.warning(f'Пользователь ввел неверный тип токена: {token_str}. Новая попытка...')
-                    raise InputHandlerDataError(f'Неверный тип токена. Варианты: AND, OR, XOR, IMP')
 
-                tokens.append(token_type())
-                i += 1
-            except InputHandlerDataError:
-                continue
-            except EOFError:
-                logger.error(f"Ввод токена {i} прерван (EOF)")
-                raise
-            except Exception as e:
-                logger.error(f"Неожиданная ошибка: {str(e)}")
-                raise
+        for i in range(1, tokens_amount + 1):
+            parse_token = self._create_parser_token(f"Выберите токен {i}: ")
+            token_type = parse_token()
+            tokens.append(token_type())
 
         logger.info(f'Игрок успешно выбрал токены: {[token.to_string() for token in tokens]}')
-
         return tokens
     
+    def _create_parser_token(self, prompt: str) -> Callable[[str], Token]:
+        """
+        Фабрика парсеров, преобразующих
+        ввод в верхний регистр, и ищущих
+        соответствие в хэш-таблице токенов
+        """
+        @safe_input(prompt)
+        def parser(string: str) -> Token:
+            token_str = string.strip().upper()
+            token_type = self.tokens_map.get(token_str)
+            if not token_type:
+                logger.warning(f'Пользователь ввел неверный тип токена: {token_str}. Новая попытка...')
+                raise InputHandlerDataError(f'Неверный тип токена. Допустимые значения: {list(self.tokens_map.keys())}')
+            return token_type
+        return parser
 
     def _create_parser_int(self, prompt: str) -> Callable[[str], int]:
         """
@@ -115,6 +114,8 @@ def safe_input(prompt: str):
                     string = input(prompt).strip()
                     return parser_func(string)
                 except ValueError:
+                    continue
+                except InputHandlerDataError:
                     continue
                 except EOFError:
                     logger.error(f"Ввод прерван (EOF)")
