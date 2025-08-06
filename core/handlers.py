@@ -2,13 +2,18 @@
 
 from abc import ABC, abstractmethod
 import logging
+from typing import Callable
 
 from core import settings
 from core.exceptions import InputHandlerDataError
+from core.players import Player
 from core.tokens import AND, IMP, OR, XOR, Token
 
 
 logger = logging.getLogger(__name__)
+
+
+
 
 class InputHandler(ABC):
     @abstractmethod
@@ -62,6 +67,60 @@ class ConsoleInputHandler(InputHandler):
 
         return tokens
     
-    def get_player_move(self):
-        return super().get_player_move()
+
+    def _create_parser_int(self, prompt: str) -> Callable[[str], int]:
+        """
+        Фабрика парсеров, преобразующих
+        строку в целое число
+        """
+        @safe_input(prompt)
+        def parser(string: str) -> int:
+            return int(string)
+        return parser
     
+    def _create_parser_tuple_int(self, prompt: str) -> Callable[[str], tuple[int, int]]:
+        """
+        Фабрика парсеров, преобразующих
+        строку в кортеж из двух чисел
+        """
+        @safe_input(prompt)
+        def parser(string: str) -> tuple[int, int]:
+            _int1, _int2 = tuple(map(int, string.split()))
+            return _int1, _int2
+        return parser
+        
+    def get_player_move(self) -> list[int]:
+        parse_token = self._create_parser_int("Введите порядковый номер токена")
+        parse_coords = self._create_parser_tuple_int("Введите координаты клетки (два числа через пробел)")
+
+        token = parse_token()
+        row, col = parse_coords()
+
+        logger.debug(f'Пользователь ввел: порядковый номер токена: {token}; координаты: ({row}, {col})')
+        return [token, row, col]
+    
+
+
+
+def safe_input(prompt: str):
+    """
+    Декоратор для обработки
+    стандартных ошибок при пользовательском вводе
+    :attr prompt: подсказка при вводе
+    """
+    def decorator(parser_func):
+        def wrapper(*args, **kwargs):
+            while True:
+                try:
+                    string = input(prompt).strip()
+                    return parser_func(string)
+                except ValueError:
+                    continue
+                except EOFError:
+                    logger.error(f"Ввод прерван (EOF)")
+                    raise
+                except KeyboardInterrupt:
+                    logger.error(f"Ввод прерван пользователем")
+                    raise
+        return wrapper
+    return decorator
