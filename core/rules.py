@@ -14,11 +14,24 @@ logger = logging.getLogger(__name__)
 
 class Rules(ABC):
     @abstractmethod
-    def count_points(self, *args, **kwargs):
+    def 1(self, board: Board) -> bool:
+        pass
+
+    @abstractmethod
+    def count_points(self, *args, **kwargs) -> int:
         pass
 
     
 class ThunderTruthRules(Rules):
+    """
+    ОПИСАНИЕ:
+    - Привила игры ThunderTruth. Отвечает за информацию о направлениях на
+    игровой доске, проверку завершения игры, подсчет очков, проверку
+    победителя, проверку владельца токена
+    ИНТЕРФЕЙС:
+    :::Методы:::
+    - is_board_full: остались ли пустые клетки на игровом поле
+    """
     def __init__(self) -> None:
         self.directions = ['up', 'left', 'right', 'down']
         self.directions_to_check = [
@@ -31,6 +44,18 @@ class ThunderTruthRules(Rules):
         ]
         self.valid_token_classes = [AND, OR, XOR, IMP]
         self.valid_operand_classes = [TrueOperand, FalseOperand]
+
+    def is_board_full(self, board: Board) -> bool:
+        status = all(
+            board.get_cell(row, col).is_empty == False
+            for row in range(1, board.get_size() + 1) 
+            for col in range(1, board.get_size() + 1)
+            )
+        if status:
+            logger.info(f'Проверка на пустые клетки: игровое поле заполнено!')
+        else:
+            logger.debug(f'Проверка на пустые клетки: на доске еще остались пустые клетки')
+        return status
 
     def _validate_count_points_types(self, element: Element, row: int, col: int) -> None:
         if type(element) not in self.valid_token_classes:
@@ -51,7 +76,7 @@ class ThunderTruthRules(Rules):
         
     def count_points(self, board: Board, row: int, col: int) -> int:
         """
-        Cчитает очки из клетки, в которой был положен токен
+        Cчитает очки из клетки, в которую был положен токен
         """
         element = board.get_cell(row, col).value
         self._validate_count_points_types(element, row, col)
