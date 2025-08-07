@@ -20,6 +20,7 @@ class Player(ABC):
         self._tokens: set = set()
         self._name: str | None = name
         self._id = None
+        self._points = 0
 
     def get_id(self) -> str | None:
         """
@@ -100,6 +101,17 @@ class Player(ABC):
         """
         pass
 
+    @abstractmethod
+    def add_points(self, points: int) -> None:
+        pass
+
+    def get_points(self) -> int:
+        return self._points
+    
+    def reset_points(self) -> None:
+        self._points = 0
+        logger.debug(f'Игрок {self.get_id()}: очки сброшены')
+
 
 class HumanPlayer(Player):
     def __init__(self, name: str | None = None) -> None:
@@ -141,6 +153,18 @@ class HumanPlayer(Player):
     def make_id(self):
         if not self.get_id():
             self._id = self._generate_id(self.prefix)
+
+    def add_points(self, points: int) -> None:
+        self._points += points
+        if self._points < 0:
+            self._points = 0
+        logger.debug(
+            f'Игроку {self.get_id()} добавлено {points} очков.'
+            f'Текущие очки {self.get_id()}: {self.get_points()}'
+            )
+
+
+
 
 class AIPlayer(Player):
     def __init__(self, name: str | None = None) -> None:
