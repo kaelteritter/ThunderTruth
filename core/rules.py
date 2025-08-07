@@ -14,13 +14,16 @@ logger = logging.getLogger(__name__)
 
 class Rules(ABC):
     @abstractmethod
-    def 1(self, board: Board) -> bool:
+    def is_board_full(self, board: Board) -> bool:
         pass
 
     @abstractmethod
     def count_points(self, *args, **kwargs) -> int:
         pass
 
+    @abstractmethod
+    def check_winner(self) -> Player | None:
+        pass
     
 class ThunderTruthRules(Rules):
     """
@@ -31,6 +34,9 @@ class ThunderTruthRules(Rules):
     ИНТЕРФЕЙС:
     :::Методы:::
     - is_board_full: остались ли пустые клетки на игровом поле
+    - is_token_owner: владеет ли игрок данным токеном
+    - count_points: подсчитать очки после хода
+    - check_winner: определить победителя в конце игры
     """
     def __init__(self) -> None:
         self.directions = ['up', 'left', 'right', 'down']
@@ -63,6 +69,19 @@ class ThunderTruthRules(Rules):
             raise TokenInvalidError(
                 f'Токен должен быть одного из следующих типов: {self.valid_token_classes}'
                 )
+    def check_winner(self, board: Board, *players) -> Player | None:
+        """
+        Определяет победителя (в конце игры)
+        """
+        if not self.is_board_full(board):
+            return None
+
+        players_by_points = list(sorted(players, key=lambda p: p.get_points()))
+        player1, player2 = players_by_points[0], players_by_points[1]
+
+        if player1.get_points() == player2.get_points():
+            return None
+        return player1
         
     def is_token_owner(self, player: Player, token: Token):
         """
