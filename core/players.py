@@ -5,7 +5,7 @@ import secrets
 import string
 from typing import Any
 
-from core.exceptions import InvalidNameTypeError, InvalidTokenError
+from core.exceptions import InvalidNameTypeError, TokenInvalidError
 from core.tokens import Token
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class Player(ABC):
     def _validate_tokens_set(self, tokens: Any):
         if not isinstance(tokens, set) or not all(isinstance(token, Token) for token in tokens):
             logger.warning(f"Попытка установить неверный тип токенов: {type(tokens)}:{tokens}")
-            raise InvalidTokenError(
+            raise TokenInvalidError(
                 'Коллекция токенов должна быть set. Все токены должны быть подклассом Token.'
                 )   
     
@@ -120,14 +120,14 @@ class HumanPlayer(Player):
     def _validate_pop_token(self, token):
         if not isinstance(token, Token):
             logger.warning(f'Попытка извлечь из набора игрока неверный тип токена: {token}')
-            raise InvalidTokenError('Токен должен быть подклассом Token')
+            raise TokenInvalidError('Токен должен быть подклассом Token')
         
         if not token in self.tokens:
             logger.warning(
                 f"Токен {token.to_string()} (token_id_{token.get_id()}) "
                 f"не найден у игрока id_{self.get_id()}"
             )
-            raise InvalidTokenError('Нельзя удалить токен у игрока, который ему не принадлежит')
+            raise TokenInvalidError('Нельзя удалить токен у игрока, который ему не принадлежит')
 
     def pop_token(self, token: Token) -> Token:
         self._validate_pop_token(token)

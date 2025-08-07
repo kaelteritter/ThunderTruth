@@ -12,6 +12,20 @@ from core.operands import Operand
 logger = logging.getLogger(__name__)
 
 class Token(Element):
+    """
+    ОПИСАНИЕ:
+    - Токен. Отвечает за хранение информации о себе,
+    своем владельце и вычисляет булеово выражение с собой
+    в качестве оператора
+
+    ИНТЕРФЕЙС:
+    :::Методы:::
+    - get_id: уникальный id
+    - get_owner: игрок-владелец токена
+    - get_truth_table: таблица истинности
+    - evaluate: вычислить булеово выражение вида: op1 [self] op2
+    - to_string: строковое представление
+    """
     def __init__(self, owner=None) -> None:
         self._owner = owner
         self._id = None
