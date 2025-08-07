@@ -29,6 +29,7 @@ class Board:
     - get_size: реальный размер игрового поля
     - get_size_buffered: размер игрового поля, включая буфер
     - place_token: размещение токена в клетке
+    - get_neighbors: соседние клетки по вертикали-горизонтали
     """
     def __init__(self, size: int = settings.BOARD_SIZE) -> None:
         """
@@ -158,7 +159,10 @@ class Board:
             f'успешно размещен токен {token.to_string()} c id:{token.get_id()}'
         )
 
-    def get_neighbors(self, row: int, col: int):
+    def get_neighbors(self, row: int, col: int) -> list[Cell]:
+        """
+        Возвращает соседние клетки по горизонтали и вертикали
+        """
         neighbor_coords = [
                     (-1, 0),  
             (0, -1),         (0, 1),

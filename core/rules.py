@@ -6,7 +6,7 @@ import logging
 from core.board import Board
 from core.elements import Element
 from core.exceptions import TokenInvalidError
-from core.operands import FalseOperand, TrueOperand
+from core.operands import FalseOperand, Operand, TrueOperand
 from core.players import Player
 from core.tokens import AND, IMP, OR, XOR, Token
 
@@ -27,7 +27,7 @@ class ThunderTruthRules(Rules):
             ('up', 'down'),
             ('left', 'down'),
             ('left', 'right'),
-            ('down', 'right'),
+            ('right', 'down'),
         ]
         self.valid_token_classes = [AND, OR, XOR, IMP]
         self.valid_operand_classes = [TrueOperand, FalseOperand]
@@ -44,10 +44,12 @@ class ThunderTruthRules(Rules):
         Проверят, игрок, совершающий ход, кладет свой токен
         """
         if token.get_owner() != player:
+            logger.debug(f'Проверка на владельца: токен {token.get_id()} не принадлежит игроку {player.get_id()}')
             return False
+        logger.debug(f'Проверка на владельца: токен {token.get_id()} принадлежит игроку {player.get_id()}')
         return True
         
-    def count_points(self, board: Board, row: int, col: int):
+    def count_points(self, board: Board, row: int, col: int) -> int:
         """
         Cчитает очки из клетки, в которой был положен токен
         """
@@ -57,4 +59,24 @@ class ThunderTruthRules(Rules):
         # На данном этапе обработки токен не может не принадлежать игроку,
         # потому что это проверка осуществляется ранее окрестратром Game
         # через другой метод Rules
+
+        neighbors = board.get_neighbors(row, col)
+        neighbors = dict(zip(self.directions, neighbors))
+        points = 0
+
+        for direction1, direction2 in self.directions_to_check:
+            neighbor1 = neighbors[direction1].value
+            neighbor2 = neighbors[direction2].value
+            if isinstance(neighbor1, Operand) and isinstance(neighbor2, Operand):
+                result = element.evaluate(neighbor1, neighbor2)
+                logger.debug(
+                    f'Сосед '
+                    f'{direction1} {neighbor1.to_string()} '
+                    f'{element.to_string()} '
+                    f'{neighbor2.to_string()} {direction2} '
+                    f'-> {result}'
+                    )
+                points += 1 if result else 0
+
+        return points
 
