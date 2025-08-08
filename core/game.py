@@ -5,7 +5,7 @@ from typing import Any
 from core import settings
 from core.board import Board
 from core.displays import Display
-from core.exceptions import PlayerInvalidError, RulesOwnershipError
+from core.exceptions import BoardCoordinateTypeError, CellOutOfBorderError, PlayerInvalidError, RulesOwnershipError
 from core.handlers import InputHandler
 from core.players import HumanPlayer, Player
 from core.rules import Rules
@@ -108,12 +108,23 @@ class Game:
         
         # Проверка на тип координат, токена, валидность координат и занятость клетки идет внутри доски
         self.board.place_token(token, row, col)
-        
-        # Изымаем токен из набора игрока
-        player.pop_token(token)
-    
 
-    def play(self):
+    def impute(self, player: Player, row: int, col: int) -> None:
+        """
+        Рассчет очков после хода
+        """
+        points = self.rules.count_points(self.board, row, col)
+        player.add_points(points)
+        logger.warning(f'Игрок {player.get_id()} ({player.name}): +{points} очков')
+        logger.warning(f'Очки игрока {player.get_id()} ({player.name}): {player.get_points()}')
+
+        extra_points = self.rules.exclude_points_xor(self.board, row, col)
+        if extra_points:
+            opponent, this_player = extra_points
+            opponent.add_points(-1)
+            this_player.add_points(1)
+
+    def play(self, debug=False):
         # начало раунда
         self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}")
         self.setup()
@@ -121,16 +132,40 @@ class Game:
         while True:
             # до хода: получаем игрока и данные из ввода
             player: Player = self.get_current_player()
-            token_idx, row, col = self.input_handler.get_player_move()
-            token = player.tokens[token_idx]
+            self.display.show_prompt(f"Ход игрока {player.name}")
+            self.display.display_board(self.board)
 
             # ход: кладем токен, обрабатывем все исключения, считаем очки
-            self.move(player, token, row, col)
-            # self.rules.count_points() ...
-            # self.rules.exclude_points_xor() ...
+            try:
+                token_idx, row, col = self.input_handler.get_player_move()
+                token = player.tokens[token_idx]
+                self.move(player, token, row, col)
+                self.impute(player, row, col)
+                player.pop_token(token)
+            # Здесь перехватываем ошибки и заставляем делать ход заново
+            except (RulesOwnershipError, 
+                    BoardCoordinateTypeError, 
+                    CellOutOfBorderError, 
+                    IndexError, 
+                    ValueError) as e:
+                logger.warning(f"Ошибка хода: {str(e)}")
+                self.display.show_prompt(f"Ошибка: {str(e)}. Попробуйте снова.")
+                continue
 
             # после хода: меняем игрока, проверяем, что остались пустые клетки
-            break
+            self.switch_player()
+            if self.rules.is_board_full(self.board):
+                break
 
         # конец раунда: считаем очки, показываем итог игры
+        self.display.display_board(self.board)
+        winner = self.rules.check_winner(self.board, *self.players)
+        if winner:
+            self.display.show_prompt(f"Победитель: {winner}. Набрано: {winner.get_points()}")
+        else:
+            self.display.show_prompt(f"Ничья")
+
+        if not debug:
+            for player in self.players:
+                player.reset_points()
         self.display.show_prompt(f"Конец игры")
