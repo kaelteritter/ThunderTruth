@@ -94,8 +94,8 @@ class ConsoleInputHandler(InputHandler):
     
         
     def get_player_move(self) -> list[int]:
-        parse_token = self._create_parser_int("Введите порядковый номер токена")
-        parse_coords = self._create_parser_tuple_int("Введите координаты клетки (два числа через пробел)")
+        parse_token = self._create_parser_int("Введите порядковый номер токена: ")
+        parse_coords = self._create_parser_tuple_int("Введите координаты клетки (два числа через пробел): ")
 
         token = parse_token()
         row, col = parse_coords()
@@ -111,7 +111,7 @@ class ConsoleInputHandler(InputHandler):
 
     
     def get_player_name(self) -> str:
-        parse_name = self._create_parser_str("Введите имя (можно оставить пустым):")
+        parse_name = self._create_parser_str("Введите имя (можно оставить пустым): ")
         name = parse_name()
         logger.debug(f'Введено имя: {name}')
         return name
