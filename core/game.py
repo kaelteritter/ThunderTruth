@@ -25,6 +25,7 @@ class Game:
         self._input_handler = input_handler
         self._display = display
         self._players = []
+        self._current_player_index = 0
 
     @property
     def board(self):
@@ -45,6 +46,16 @@ class Game:
     @property
     def players(self):
         return self._players
+    
+    def get_current_player(self):
+        return self.players[self._current_player_index]
+    
+    def switch_player(self):
+        """
+        Передает ход следующему игроку в списке
+        """
+        self._current_player_index = (self._current_player_index + 1) % len(self.players)
+        logger.debug(f'Переход хода на игрока {self.players[self._current_player_index].get_id()}')
     
     def _validate_player_type(self, player: Any):
         if not isinstance(player, Player):
@@ -90,10 +101,10 @@ class Game:
     
 
     def play(self):
-        # Показать приветствие
-        # Инициализировать доску и запросить выбор токенов
+        self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}")
+        self.setup()
 
-        # Делать ход, давать промпты, сверяться с правилами
-
-        # Закончить игровой цикл, показать итог, предложить сыграть снова
-        pass
+        while True:
+            # до хода
+            player: Player = self.get_current_player()
+            break
