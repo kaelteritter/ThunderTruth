@@ -36,6 +36,7 @@ class ThunderTruthRules(Rules):
     - is_board_full: остались ли пустые клетки на игровом поле
     - is_token_owner: владеет ли игрок данным токеном
     - count_points: подсчитать очки после хода
+    - exclude_points_xor: добавить себе/убавить сопернику очки, если токен - XOR
     - check_winner: определить победителя в конце игры
     """
     def __init__(self) -> None:
@@ -155,10 +156,6 @@ class ThunderTruthRules(Rules):
                     )
 
         return None
-
-
-            
-
         
     def count_points(self, board: Board, row: int, col: int) -> int:
         """
