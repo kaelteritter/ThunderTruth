@@ -17,7 +17,7 @@ class Player(ABC):
     Хранит информацию об игроке и управляет своим набором токенов-операторов.
     """
     def __init__(self, name: str | None = None) -> None:
-        self._tokens: set = set()
+        self._tokens: list = []
         self._name: str | None = name
         self._id = None
         self._points = 0
@@ -69,13 +69,13 @@ class Player(ABC):
         return True
     
     def _validate_tokens_set(self, tokens: Any):
-        if not isinstance(tokens, set) or not all(isinstance(token, Token) for token in tokens):
+        if not isinstance(tokens, list) or not all(isinstance(token, Token) for token in tokens):
             logger.warning(f"Попытка установить неверный тип токенов: {type(tokens)}:{tokens}")
             raise TokenInvalidError(
-                'Коллекция токенов должна быть set. Все токены должны быть подклассом Token.'
+                'Коллекция токенов должна быть list. Все токены должны быть подклассом Token.'
                 )   
     
-    def set_tokens(self, tokens: set[Token]) -> bool:
+    def set_tokens(self, tokens: list[Token]) -> bool:
         """
         Назначить набор токенов
         """
@@ -122,7 +122,7 @@ class HumanPlayer(Player):
         logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
 
     def add_token(self, token: Token) -> bool:
-        self.tokens.add(token)
+        self.tokens.append(token)
         logger.debug(
             f"Игрок {self.name}:id_{self.get_id()} получил "
             f"токен {token.to_string()} (token_id_{token.get_id()}"
@@ -175,7 +175,7 @@ class AIPlayer(Player):
         logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
 
     def add_token(self, token: Token) -> bool:
-        self.tokens.add(token)
+        self.tokens.append(token)
         return True
 
     def pop_token(self, token: Token) -> Token:
