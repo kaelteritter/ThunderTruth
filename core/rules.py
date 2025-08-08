@@ -25,6 +25,10 @@ class Rules(ABC):
     def check_winner(self) -> Player | None:
         pass
     
+    @abstractmethod
+    def is_token_owner(self) -> bool:
+        pass
+    
 class ThunderTruthRules(Rules):
     """
     ОПИСАНИЕ:
@@ -84,7 +88,7 @@ class ThunderTruthRules(Rules):
             return None
         return player1
         
-    def is_token_owner(self, player: Player, token: Token):
+    def is_token_owner(self, player: Player, token: Token) -> bool:
         """
         Проверят, игрок, совершающий ход, кладет свой токен
         """

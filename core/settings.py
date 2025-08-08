@@ -21,7 +21,7 @@ LOGGING_DATEFMT = '%Y-%m-%d %H:%M:%S'
 # Игровые настройки
 GAME_NAME = 'ThunderTruth'
 
-BOARD_SIZE = int(os.getenv('BOARD_SIZE', 5))
-INITIAL_TOKENS = int(os.getenv('INITIAL_TOKENS', 4))
+BOARD_SIZE = 5
+INITIAL_TOKENS = 4
 
-PLAYERS_AMOUNT = int(os.getenv('PLAYERS_AMOUNT', 2))
+PLAYERS_AMOUNT = 2

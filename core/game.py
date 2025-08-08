@@ -5,10 +5,11 @@ from typing import Any
 from core import settings
 from core.board import Board
 from core.displays import Display
-from core.exceptions import PlayerInvalidError
+from core.exceptions import PlayerInvalidError, RulesOwnershipError
 from core.handlers import InputHandler
 from core.players import HumanPlayer, Player
 from core.rules import Rules
+from core.tokens import Token
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ class Game:
         self.players.append(player)
         logger.info(f'Добавлен новый игрок {player.get_id()} с именем {player.name}')
 
-    def setup(self):
+    def setup(self) -> None:
         """
         Запрашивает выбор токенов у игроков и инициализирует доску
         """
@@ -98,13 +99,38 @@ class Game:
             player.set_tokens(tokens)
         logger.info('Игра инициализирована!')
 
+    def move(self, player: Player, token: Token, row: int, col: int):
+        # Токен - в наборе текущего игрока?
+        # Логгирование DEBUG также идет в классе обработчика
+        if not self.rules.is_token_owner(player, token):
+            logger.warning(f'Игрок {player.get_id()} пытается сделать ход не своим токеном {token.get_id()}')
+            raise RulesOwnershipError(f'Токен должен принадлежать игроку')
+        
+        # Проверка на тип координат, токена, валидность координат и занятость клетки идет внутри доски
+        self.board.place_token(token, row, col)
+        
+        # Изымаем токен из набора игрока
+        player.pop_token(token)
     
 
     def play(self):
+        # начало раунда
         self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}")
         self.setup()
 
         while True:
-            # до хода
+            # до хода: получаем игрока и данные из ввода
             player: Player = self.get_current_player()
+            token_idx, row, col = self.input_handler.get_player_move()
+            token = player.tokens[token_idx]
+
+            # ход: кладем токен, обрабатывем все исключения, считаем очки
+            self.move(player, token, row, col)
+            # self.rules.count_points() ...
+            # self.rules.exclude_points_xor() ...
+
+            # после хода: меняем игрока, проверяем, что остались пустые клетки
             break
+
+        # конец раунда: считаем очки, показываем итог игры
+        self.display.show_prompt(f"Конец игры")
