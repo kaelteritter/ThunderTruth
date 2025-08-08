@@ -146,6 +146,8 @@ class HumanPlayer(Player):
     def pop_token(self, token: Token) -> Token:
         self._validate_pop_token(token)
         self.tokens.remove(token)
+        if token.get_owner():
+            token.remove_owner()
         logger.debug(
             f"Игрок {self.name}:id_{self.get_id()}"
             f"пытается использовать токен {token.to_string()} (token_id_{token.get_id()}) "
@@ -157,7 +159,8 @@ class HumanPlayer(Player):
         Назначить набор токенов
         """
         self._validate_tokens_set(tokens)
-        self._tokens = [self.add_token(token) for token in tokens]
+        for token in tokens:
+            self.add_token(token)
         logger.debug(
             f"Игроку {self.name}:{self.get_id()} присвоен набор "
             f"токенов: {', '.join(token.to_string() for token in tokens)}"

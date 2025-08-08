@@ -22,6 +22,8 @@ class Token(Element):
     :::Методы:::
     - get_id: уникальный id
     - get_owner: игрок-владелец токена
+    - set_owner: устанавливает игрока-владельца после инициализации
+    - remove_owner: удаляет игрока-владельца
     - get_truth_table: таблица истинности
     - evaluate: вычислить булеово выражение вида: op1 [self] op2
     - to_string: строковое представление
@@ -63,6 +65,16 @@ class Token(Element):
         if self not in player.tokens:
             player.add_token(self)
         logger.debug(f'Для токена {self.get_id()} установлен владелец {player.get_id()}')
+
+    def remove_owner(self):
+        """
+        Удаляет владельца токена
+        """
+        previous_owner = self.get_owner()
+        self._owner = None
+        if self in previous_owner.tokens:
+            previous_owner.tokens.remove(self)
+        logger.debug(f'Для токена {self.get_id()} удален владелец {previous_owner.get_id()}')
     
     @abstractmethod
     def get_truth_table(self) -> dict:
