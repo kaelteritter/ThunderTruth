@@ -1,5 +1,8 @@
+# core/game.py
+
 import logging
 from typing import Any
+from core import settings
 from core.board import Board
 from core.displays import Display
 from core.exceptions import PlayerInvalidError
@@ -53,10 +56,17 @@ class Game:
             logger.warning(f'Попытка добавить уже присоединившегося игрока {player.get_id()}')
             raise PlayerInvalidError(f"Игрок {player.get_id()} уже добавлен в игру")
     
+    def _validate_players_amount(self):
+        limit = settings.PLAYERS_AMOUNT
+        if len(self.players) >= limit:
+            logger.warning(f'Попытка добавить игрока сверх лимита')
+            raise PlayerInvalidError(f"Игроков не может быть больше {limit}")
+    
     def add_player(self, player: Player) -> None:
         """
         Добавляет игрока в игру
         """
+        self._validate_players_amount()
         self._validate_player_type(player)
         self._validate_unique_players(player)
         self.players.append(player)
@@ -66,7 +76,11 @@ class Game:
         """
         Запрашивает выбор токенов у игроков и инициализирует доску
         """
-        pass
+        self.board.setup()
+        for player in self.players:
+            tokens = self.input_handler.get_player_token_choice()
+            player.set_tokens(tokens)
+        logger.info('Игра инициализирована!')
     
 
     def play(self):
