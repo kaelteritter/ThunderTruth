@@ -55,6 +55,13 @@ class Token(Element):
     def get_owner(self):
         return self._owner
     
+    def set_owner(self, player):
+        """
+        Назначает владельца токена
+        """
+        self._owner = player
+        logger.debug(f'Для токена {self.get_id()} установлен владелец {player.get_id()}')
+    
     @abstractmethod
     def get_truth_table(self) -> dict:
         pass
