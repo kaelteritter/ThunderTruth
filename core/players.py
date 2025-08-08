@@ -18,8 +18,8 @@ class Player(ABC):
     """
     def __init__(self, name: str | None = None) -> None:
         self._tokens: list = []
-        self._name: str | None = name
         self._id = None
+        self._name: str | None = name
         self._points = 0
 
     def get_id(self) -> str | None:
@@ -118,6 +118,7 @@ class HumanPlayer(Player):
         super().__init__(name)
         self.prefix = 'human'
         self.make_id()
+        self._name = name or f'AnonymousPlayer_{self.get_id()}'
         
         logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
 
@@ -159,8 +160,15 @@ class HumanPlayer(Player):
         Назначить набор токенов
         """
         self._validate_tokens_set(tokens)
+
+        for token in self.tokens:
+            token.remove_owner()
+
+        self._tokens = []
+
         for token in tokens:
             self.add_token(token)
+            
         logger.debug(
             f"Игроку {self.name}:{self.get_id()} присвоен набор "
             f"токенов: {', '.join(token.to_string() for token in tokens)}"
