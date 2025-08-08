@@ -123,6 +123,8 @@ class HumanPlayer(Player):
 
     def add_token(self, token: Token) -> bool:
         self.tokens.append(token)
+        if token.get_owner() is not self:
+            token.set_owner(self)
         logger.debug(
             f"Игрок {self.name}:id_{self.get_id()} получил "
             f"токен {token.to_string()} (token_id_{token.get_id()}"
@@ -149,6 +151,18 @@ class HumanPlayer(Player):
             f"пытается использовать токен {token.to_string()} (token_id_{token.get_id()}) "
         )
         return token
+    
+    def set_tokens(self, tokens: list[Token]) -> bool:
+        """
+        Назначить набор токенов
+        """
+        self._validate_tokens_set(tokens)
+        self._tokens = [self.add_token(token) for token in tokens]
+        logger.debug(
+            f"Игроку {self.name}:{self.get_id()} присвоен набор "
+            f"токенов: {', '.join(token.to_string() for token in tokens)}"
+            )
+        return True
 
     def make_id(self):
         if not self.get_id():

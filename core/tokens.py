@@ -60,6 +60,8 @@ class Token(Element):
         Назначает владельца токена
         """
         self._owner = player
+        if self not in player.tokens:
+            player.add_token(self)
         logger.debug(f'Для токена {self.get_id()} установлен владелец {player.get_id()}')
     
     @abstractmethod
