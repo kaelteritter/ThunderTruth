@@ -1,6 +1,8 @@
 import logging
+from typing import Any
 from core.board import Board
 from core.displays import Display
+from core.exceptions import PlayerInvalidError
 from core.handlers import InputHandler
 from core.players import Player
 from core.rules import Rules
@@ -41,10 +43,30 @@ class Game:
     def players(self):
         return self._players
     
-    def add_player(self, player: Player):
+    def _validate_player_type(self, player: Any):
+        if not isinstance(player, Player):
+            logger.warning(f'Передан неверный тип игрока: {type(player)}')
+            raise PlayerInvalidError("Игрок должен быть типа Player")
+        
+    def _validate_unique_players(self, player: Player):
+        if player in self.players:
+            logger.warning(f'Попытка добавить уже присоединившегося игрока {player.get_id()}')
+            raise PlayerInvalidError(f"Игрок {player.get_id()} уже добавлен в игру")
+    
+    def add_player(self, player: Player) -> None:
+        """
+        Добавляет игрока в игру
+        """
+        self._validate_player_type(player)
+        self._validate_unique_players(player)
         self.players.append(player)
         logger.info(f'Добавлен новый игрок {player.get_id()} с именем {player.name}')
 
+    def setup(self):
+        """
+        Запрашивает выбор токенов у игроков и инициализирует доску
+        """
+        pass
     
 
     def play(self):
