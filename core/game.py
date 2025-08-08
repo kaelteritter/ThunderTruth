@@ -7,7 +7,7 @@ from core.board import Board
 from core.displays import Display
 from core.exceptions import PlayerInvalidError
 from core.handlers import InputHandler
-from core.players import Player
+from core.players import HumanPlayer, Player
 from core.rules import Rules
 
 logger = logging.getLogger(__name__)
@@ -76,11 +76,17 @@ class Game:
         """
         Запрашивает выбор токенов у игроков и инициализирует доску
         """
+        while len(self.players) < settings.PLAYERS_AMOUNT:
+            player_name = self.input_handler.get_player_name()
+            new_player = HumanPlayer(name=player_name)
+            self.add_player(new_player)
+
         self.board.setup()
         for player in self.players:
             tokens = self.input_handler.get_player_token_choice()
             player.set_tokens(tokens)
         logger.info('Игра инициализирована!')
+
     
 
     def play(self):

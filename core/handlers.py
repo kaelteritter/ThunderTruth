@@ -29,6 +29,10 @@ class InputHandler(ABC):
         """
         pass
 
+    @abstractmethod
+    def get_player_name(self):
+        pass
+
 class ConsoleInputHandler(InputHandler):
     """
     Обработчик ввода с консоли
@@ -87,6 +91,7 @@ class ConsoleInputHandler(InputHandler):
             _int1, _int2 = tuple(map(int, string.split()))
             return _int1, _int2
         return parser
+    
         
     def get_player_move(self) -> list[int]:
         parse_token = self._create_parser_int("Введите порядковый номер токена")
@@ -97,6 +102,19 @@ class ConsoleInputHandler(InputHandler):
 
         logger.debug(f'Пользователь ввел: порядковый номер токена: {token}; координаты: ({row}, {col})')
         return [token, row, col]
+    
+    def _create_parser_str(self, prompt: str) -> Callable[[str], str]:
+        @safe_input(prompt)
+        def parser(string: str) -> str:
+            return str(string)
+        return parser
+
+    
+    def get_player_name(self) -> str:
+        parse_name = self._create_parser_str("Введите имя (можно оставить пустым):")
+        name = parse_name()
+        logger.debug(f'Введено имя: {name}')
+        return name
     
 
 
