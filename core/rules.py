@@ -29,6 +29,10 @@ class Rules(ABC):
     def is_token_owner(self) -> bool:
         pass
     
+    @abstractmethod
+    def are_tokens_left(self) -> bool:
+        pass
+    
 class ThunderTruthRules(Rules):
     """
     ОПИСАНИЕ:
@@ -191,4 +195,16 @@ class ThunderTruthRules(Rules):
                 points += 1 if result else 0
 
         return points
+    
+    def are_tokens_left(self, players_list: list[Player]) -> bool:
+        tokens = 0
+        for player in players_list:
+            tokens += len(player.tokens)
+
+        if not tokens:
+            logger.debug(f'Проверка правила [Не осталось токенов]: Кончились.')
+            return False
+
+        logger.debug(f'Проверка правила [Не осталось токенов]: Остались.')
+        return True
 
