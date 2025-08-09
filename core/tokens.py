@@ -30,6 +30,7 @@ class Token(Element):
     """
     def __init__(self, owner=None) -> None:
         self._owner = owner
+        self._last_owner = owner
         self._id = None
         self._prefix = 'token'
 
@@ -57,11 +58,16 @@ class Token(Element):
     def get_owner(self):
         return self._owner
     
+    def get_last_owner(self):
+        return self._last_owner
+    
     def set_owner(self, player):
         """
         Назначает владельца токена
         """
         self._owner = player
+        if self._last_owner is None:
+            self._last_owner = player
         if self not in player.tokens:
             player.add_token(self)
         logger.debug(f'Для токена {self.get_id()} установлен владелец {player.get_id()}')
@@ -70,11 +76,10 @@ class Token(Element):
         """
         Удаляет владельца токена
         """
-        previous_owner = self.get_owner()
         self._owner = None
-        if self in previous_owner.tokens:
-            previous_owner.tokens.remove(self)
-        logger.debug(f'Для токена {self.get_id()} удален владелец {previous_owner.get_id()}')
+        if self in self._last_owner.tokens:
+            self._last_owner.tokens.remove(self)
+        logger.debug(f'Для токена {self.get_id()} удален владелец {self._last_owner.get_id()}')
     
     @abstractmethod
     def get_truth_table(self) -> dict:
