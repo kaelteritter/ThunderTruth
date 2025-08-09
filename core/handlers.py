@@ -30,6 +30,10 @@ class InputHandler(ABC):
     def get_name(self):
         pass
 
+    @abstractmethod
+    def ask_play_again(self) -> bool:
+        pass
+
 class ConsoleInputHandler(InputHandler):
     """
     Обработчик ввода с консоли
@@ -103,6 +107,16 @@ class ConsoleInputHandler(InputHandler):
         name = input().strip()
         logger.debug(f'Введено имя: {name}')
         return name
+    
+    def ask_play_again(self) -> bool:
+        self.display.show_prompt("Хотите сыграть еще раз? (Y/N) [Пропуск = да]: ")
+        play_again = input().strip().upper()
+
+        if play_again == 'N':
+            logger.debug(f'Выбрана опция "Завершить игру"')
+        else:
+            logger.debug(f'Выбрана опция "Новый раунд"')
+        return play_again != 'N'
     
 
 

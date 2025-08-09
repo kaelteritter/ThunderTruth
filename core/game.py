@@ -30,6 +30,7 @@ class Game:
         self._display = display
         self._players = []
         self._current_player_index = 0
+        self.play_again = False
         
 
     @property
@@ -152,7 +153,7 @@ class Game:
         self.display.show_prompt(f'Следующий ход...')
         self.switch_player()
 
-    def end_round(self, debug):
+    def end_round(self, debug) -> bool:
         self.display.display_board(self.board)
         winner = self.rules.check_winner(self.board, *self.players)
         if winner:
@@ -164,6 +165,9 @@ class Game:
             for player in self.players:
                 player.reset_points()
         self.display.show_prompt(f"Конец игры")
+
+        newRound = self.input_handler.ask_play_again()
+        return newRound
 
     def handle_exception(self, 
                          error: Exception, 
@@ -190,29 +194,39 @@ class Game:
         logger.error(f'Неожиданная ошибка: {str(error)}')
         self.display.show_prompt(f'Ошибка: {str(error)}. Попробуйте снова.')
 
-    def play(self, debug=False):
-        self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}!")
+    def start_round(self):
+        if self.play_again:
+            self._board = Board()
         self.setup()
 
+    def play(self, debug=False):
+        self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}!")
+        
         while True:
-            player = self.get_current_player()
-            self._turn_info(player)
+            self.start_round()
+            
+            while True:
+                player = self.get_current_player()
+                self._turn_info(player)
 
-            try:
-                token, row, col = self._get_info(player)
-                self.move(player, token, row, col)
-                self.impute(player, row, col)
-            except Exception as error:
-                self.handle_exception(error, player, row, col)
-                continue
+                try:
+                    token, row, col = self._get_info(player)
+                    self.move(player, token, row, col)
+                    self.impute(player, row, col)
+                except Exception as error:
+                    self.handle_exception(error, player, row, col)
+                    continue
 
-            self.end_turn(player, token)
+                self.end_turn(player, token)
 
-            if (
-                self.rules.is_board_full(self.board) or 
-                not self.rules.are_tokens_left(self.players)
-            ):
-                break
+                if (
+                    self.rules.is_board_full(self.board) or 
+                    not self.rules.are_tokens_left(self.players)
+                ):
+                    break
 
-        self.end_round(debug)
+            self.play_again = self.end_round(debug)
+            if not self.play_again:
+                self.display.show_prompt('Игра завершена!')
+                return
 
