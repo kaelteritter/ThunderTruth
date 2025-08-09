@@ -130,7 +130,6 @@ class Game:
         extra_points = self.rules.exclude_points_xor(self.board, row, col)
         
         if extra_points:
-            print(extra_points)
             opponent, this_player = extra_points
             opponent.add_points(-1)
             this_player.add_points(1)
@@ -157,7 +156,7 @@ class Game:
         self.display.display_board(self.board)
         winner = self.rules.check_winner(self.board, *self.players)
         if winner:
-            self.display.show_prompt(f"Победитель: {winner}. Набрано: {winner.get_points()}")
+            self.display.show_prompt(f"Победитель: {winner.name}. Набрано: {winner.get_points()} очко")
         else:
             self.display.show_prompt(f"Ничья")
 

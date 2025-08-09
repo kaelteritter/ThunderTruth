@@ -82,14 +82,15 @@ class ThunderTruthRules(Rules):
         """
         Определяет победителя (в конце игры)
         """
-        if not self.is_board_full(board):
-            return None
-
         players_by_points = list(sorted(players, key=lambda p: -p.get_points()))
         player1, player2 = players_by_points[0], players_by_points[1]
 
+        logger.debug(f'Выявление победителя. Игроки: {[player.name for player in players_by_points]}')
         if player1.get_points() == player2.get_points():
+            logger.debug(f'Выявление победителя: не выявлен')
             return None
+        
+        logger.debug(f'Выявление победителя: {player1.name}')
         return player1
         
     def is_token_owner(self, player: Player, token: Token) -> bool:
