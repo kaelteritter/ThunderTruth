@@ -130,7 +130,7 @@ class ThunderTruthRules(Rules):
         expected = [Operand, Token, Operand, XOR, Operand]
 
         for chain in chains:
-            # Проверяем, что все координат в границах
+            # Проверяем, что все координаты в границах
             if not self._is_chain_on_board(board, chain):
                 continue
             
@@ -143,7 +143,7 @@ class ThunderTruthRules(Rules):
             op1, token1, op2, token2, op3 = elements
 
             # Токены принадлежат: один - сопернику, второй - делающему ход
-            if self.is_token_owner(token2.get_owner(), token1):
+            if self.is_token_owner(token2.get_last_owner(), token1):
                 continue
             
 
@@ -155,7 +155,8 @@ class ThunderTruthRules(Rules):
                 f"Цепочка XOR: {op1.to_string()} {token1.to_string()} {op2.to_string()} "
                 f"{token2.to_string()} {op3.to_string()} -> {result}"
                 )
-                return token1.get_owner(), token2.get_owner()
+                logger.debug(f'exclude_points_xor вернул игроков: {token1.get_last_owner(), token2.get_owner()}')
+                return token1.get_last_owner(), token2.get_owner()
             
             else:
                 logger.debug(
