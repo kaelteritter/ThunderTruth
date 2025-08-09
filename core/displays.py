@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import logging
 
 from core.board import Board
+from core.players import Player
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,10 @@ class Display(ABC):
         """
         Сообщение о ходе игры
         """
+        pass
+
+    @abstractmethod
+    def show_score(self, players: list[Player]):
         pass
 
 
@@ -38,3 +43,11 @@ class ConsoleDisplay(Display):
     def show_prompt(self, msg: str) -> None:
         print(msg)
         logger.debug(f'Выведено сообщение в консоль: {msg}')
+
+    def show_score(self, players: list[Player]):
+        result_table = {player.name:player.get_points() for player in players}
+        str_output = '\n'.join(map(lambda x: f'{x[0]}: {x[1]}', result_table.items()))
+        print(
+            f'Текущий счет:\n'
+            f'{str_output}'
+        )
