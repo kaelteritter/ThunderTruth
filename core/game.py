@@ -5,7 +5,10 @@ from typing import Any
 from core import settings
 from core.board import Board
 from core.displays import Display
-from core.exceptions import BoardCoordinateTypeError, CellOutOfBorderError, PlayerInvalidError, RulesOwnershipError
+from core.exceptions import (
+    CellOccupiedError, CellOutOfBorderError, 
+    PlayerInvalidError, RulesOwnershipError
+)
 from core.handlers import InputHandler
 from core.players import HumanPlayer, Player
 from core.rules import Rules
@@ -27,6 +30,7 @@ class Game:
         self._display = display
         self._players = []
         self._current_player_index = 0
+        
 
     @property
     def board(self):
@@ -88,14 +92,18 @@ class Game:
         """
         Запрашивает выбор токенов у игроков и инициализирует доску
         """
+        i = 1
         while len(self.players) < settings.PLAYERS_AMOUNT:
-            player_name = self.input_handler.get_player_name()
+            self.display.show_prompt(f'Игрок {i}')
+            player_name = self.input_handler.get_name()
             new_player = HumanPlayer(name=player_name)
             self.add_player(new_player)
+            i += 1
 
         self.board.setup()
         for player in self.players:
-            tokens = self.input_handler.get_player_token_choice()
+            self.display.show_prompt(f'Выбор токенов для игрока: {player.name}')
+            tokens = self.input_handler.get_tokens()
             player.set_tokens(tokens)
         logger.info('Игра инициализирована!')
 
@@ -115,49 +123,37 @@ class Game:
         """
         points = self.rules.count_points(self.board, row, col)
         player.add_points(points)
-        logger.warning(f'Игрок {player.get_id()} ({player.name}): +{points} очков')
-        logger.warning(f'Очки игрока {player.get_id()} ({player.name}): {player.get_points()}')
+        self.display.show_prompt(f'Игрок {player.name} набирает {points} очков')
+        logger.debug(f'Игрок {player.get_id()} ({player.name}): +{points} очков')
+        logger.debug(f'Очки игрока {player.get_id()} ({player.name}): {player.get_points()}')
 
         extra_points = self.rules.exclude_points_xor(self.board, row, col)
+        
         if extra_points:
+            print(extra_points)
             opponent, this_player = extra_points
             opponent.add_points(-1)
             this_player.add_points(1)
+            self.display.show_prompt(f'Игрок {this_player.name} набирает дополнительно +1 очко')
+            self.display.show_prompt(f'Игрок {opponent.name} лишается 1 очка')
 
-    def play(self, debug=False):
-        # начало раунда
-        self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}")
-        self.setup()
+    def _turn_info(self, player: Player):
+        self.display.show_prompt(f"Ход игрока {player.name}")
+        self.display.display_board(self.board)
+        self.display.show_prompt(f"Ваши токены: {[token.to_string() for token in player.tokens]}")
+        
+    def _get_info(self, player: Player) -> tuple[Token, int, int]:
+        token_idx, row, col = self.input_handler.get_move(player)
+        token = player.tokens[token_idx]
+        return token, row, col
+    
+    def end_turn(self, player: Player, token: Token):
+        player.pop_token(token)
+        self.display.show_score(self.players)
+        self.display.show_prompt(f'Следующий ход...')
+        self.switch_player()
 
-        while True:
-            # до хода: получаем игрока и данные из ввода
-            player: Player = self.get_current_player()
-            self.display.show_prompt(f"Ход игрока {player.name}")
-            self.display.display_board(self.board)
-
-            # ход: кладем токен, обрабатывем все исключения, считаем очки
-            try:
-                token_idx, row, col = self.input_handler.get_player_move()
-                token = player.tokens[token_idx]
-                self.move(player, token, row, col)
-                self.impute(player, row, col)
-                player.pop_token(token)
-            # Здесь перехватываем ошибки и заставляем делать ход заново
-            except (RulesOwnershipError, 
-                    BoardCoordinateTypeError, 
-                    CellOutOfBorderError, 
-                    IndexError, 
-                    ValueError) as e:
-                logger.warning(f"Ошибка хода: {str(e)}")
-                self.display.show_prompt(f"Ошибка: {str(e)}. Попробуйте снова.")
-                continue
-
-            # после хода: меняем игрока, проверяем, что остались пустые клетки
-            self.switch_player()
-            if self.rules.is_board_full(self.board):
-                break
-
-        # конец раунда: считаем очки, показываем итог игры
+    def end_round(self, debug):
         self.display.display_board(self.board)
         winner = self.rules.check_winner(self.board, *self.players)
         if winner:
@@ -169,3 +165,55 @@ class Game:
             for player in self.players:
                 player.reset_points()
         self.display.show_prompt(f"Конец игры")
+
+    def handle_exception(self, 
+                         error: Exception, 
+                         player: Player, 
+                         row: int | None = None, 
+                         col: int | None = None):
+        errors_map = {
+            CellOccupiedError: {
+                'log': f'Попытка поставить токен на занятую клетку: {row, col}',
+                'prompt': f"Клетка {row, col} уже занята! Попробуйте снова!"
+            },
+            CellOutOfBorderError: {
+                'log': f'Попытка разместить токен на за пределами игрового поля: {row, col}',
+                'prompt': f"Координата {row, col} за пределами игрового поля! Попробуйте снова!"
+            }
+        }
+
+        for error_type, info in errors_map.items():
+            if isinstance(error, error_type):
+                logger.warning(info['log'])
+                self.display.show_prompt(info['prompt'])
+                return
+
+        logger.error(f'Неожиданная ошибка: {str(error)}')
+        self.display.show_prompt(f'Ошибка: {str(error)}. Попробуйте снова.')
+
+    def play(self, debug=False):
+        self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}!")
+        self.setup()
+
+        while True:
+            player = self.get_current_player()
+            self._turn_info(player)
+
+            try:
+                token, row, col = self._get_info(player)
+                self.move(player, token, row, col)
+                self.impute(player, row, col)
+            except Exception as error:
+                self.handle_exception(error, player, row, col)
+                continue
+
+            self.end_turn(player, token)
+
+            if (
+                self.rules.is_board_full(self.board) or 
+                not self.rules.are_tokens_left(self.players)
+            ):
+                break
+
+        self.end_round(debug)
+
