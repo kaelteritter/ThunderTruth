@@ -81,7 +81,15 @@ class Player(ABC):
         Назначить набор токенов
         """
         self._validate_tokens_set(tokens)
-        self._tokens = tokens
+
+        for token in self.tokens:
+            token.remove_owner()
+
+        self._tokens = []
+
+        for token in tokens:
+            self.add_token(token)
+            
         logger.debug(
             f"Игроку {self.name}:{self.get_id()} присвоен набор "
             f"токенов: {', '.join(token.to_string() for token in tokens)}"
@@ -98,39 +106,6 @@ class Player(ABC):
             )
         return True
 
-    @abstractmethod
-    def pop_token(self, token: Token) -> Token:
-        """
-        Удалить токен из своего набора
-        """
-        pass
-
-    def add_points(self, points: int) -> None:
-        self._points += points
-        if self._points < 0:
-            self._points = 0
-        logger.debug(
-            f'Игроку {self.get_id()} добавлено {points} очков.'
-            f'Текущие очки {self.get_id()}: {self.get_points()}'
-            )
-
-    def get_points(self) -> int:
-        return self._points
-    
-    def reset_points(self) -> None:
-        self._points = 0
-        logger.debug(f'Игрок {self.get_id()}: очки сброшены')
-
-
-class HumanPlayer(Player):
-    def __init__(self, name: str | None = None) -> None:
-        super().__init__(name)
-        self.prefix = 'human'
-        self.make_id()
-        self._name = name or f'AnonymousPlayer_{self.get_id()}'
-        
-        logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
-    
     def _validate_pop_token(self, token):
         if not isinstance(token, Token):
             logger.warning(f'Попытка извлечь из набора игрока неверный тип токена: {token}')
@@ -153,35 +128,37 @@ class HumanPlayer(Player):
             f"пытается использовать токен {token.to_string()} (token_id_{token.get_id()}) "
         )
         return token
-    
-    def set_tokens(self, tokens: list[Token]) -> bool:
-        """
-        Назначить набор токенов
-        """
-        self._validate_tokens_set(tokens)
 
-        for token in self.tokens:
-            token.remove_owner()
-
-        self._tokens = []
-
-        for token in tokens:
-            self.add_token(token)
-            
+    def add_points(self, points: int) -> None:
+        self._points += points
+        if self._points < 0:
+            self._points = 0
         logger.debug(
-            f"Игроку {self.name}:{self.get_id()} присвоен набор "
-            f"токенов: {', '.join(token.to_string() for token in tokens)}"
+            f'Игроку {self.get_id()} добавлено {points} очков.'
+            f'Текущие очки {self.get_id()}: {self.get_points()}'
             )
-        return True
-
+        
     def make_id(self):
         if not self.get_id():
             self._id = self._generate_id(self.prefix)
 
+    def get_points(self) -> int:
+        return self._points
+    
+    def reset_points(self) -> None:
+        self._points = 0
+        logger.debug(f'Игрок {self.get_id()}: очки сброшены')
 
 
-
-
+class HumanPlayer(Player):
+    def __init__(self, name: str | None = None) -> None:
+        super().__init__(name)
+        self.prefix = 'human'
+        self.make_id()
+        self._name = name or f'AnonymousPlayer_{self.get_id()}'
+        
+        logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
+    
 
 class AIPlayer(Player):
     def __init__(self, name: str | None = None) -> None:
@@ -192,9 +169,4 @@ class AIPlayer(Player):
         
         logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
 
-    def pop_token(self, token: Token) -> Token:
-        return token
-
-    def make_id(self):
-        if not self.get_id():
-            self._id = self._generate_id(self.prefix)
+    
