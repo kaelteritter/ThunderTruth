@@ -1,13 +1,15 @@
 # core/players.py
 from abc import ABC, abstractmethod
 import logging
+import random
 import secrets
 import string
 from typing import Any
 
 from core import settings
+from core.board import Board
 from core.exceptions import InvalidNameTypeError, TokenInvalidError
-from core.tokens import Token
+from core.tokens import AND, IMP, OR, XOR, Token
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +41,6 @@ class Player(ABC):
         characters = string.ascii_letters + string.digits
         suffix = ''.join(secrets.choice(characters) for _ in range(length))
         return prefix + '_' + suffix
-    
-    @abstractmethod
-    def make_id(self):
-        """
-        Сгенерировать уникальный id.
-        """
-        pass
 
     @property
     def name(self):
@@ -168,5 +163,25 @@ class AIPlayer(Player):
         self._name = name or f'{settings.AI_OPPONENT_DEFAULT}'
         
         logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
+
+    def _choose_token_random(self):
+        if self.tokens:
+            return random.randint(1, len(self.tokens))
+        return None
+    
+    def think(self, board: Board) -> tuple[int, int, int]:
+        token_idx = self._choose_token_random()
+
+        empty_cells = []
+        for row in range(1, board.get_size() + 1):
+            for col in range(1, board.get_size() + 1):
+                if board.get_cell(row, col).is_empty:
+                    empty_cells.append((row, col))
+
+        row, col = random.choice(empty_cells)
+        logger.debug(f'AI {self.name}:{self.get_id()} выбрал {row, col} из пустых клеток: {empty_cells}')
+        logger.warning(f'ВЫБРАНО РАНДОМОМ: Токен: {token_idx}, Координата: {row, col}')
+        return token_idx - 1, row, col
+
 
     

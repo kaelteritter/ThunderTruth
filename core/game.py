@@ -1,6 +1,7 @@
 # core/game.py
 
 import logging
+import random
 from typing import Any
 from core import settings
 from core.board import Board
@@ -10,9 +11,9 @@ from core.exceptions import (
     PlayerInvalidError, RulesOwnershipError
 )
 from core.handlers import InputHandler
-from core.players import HumanPlayer, Player
+from core.players import AIPlayer, HumanPlayer, Player
 from core.rules import Rules
-from core.tokens import Token
+from core.tokens import AND, IMP, OR, XOR, Token
 
 logger = logging.getLogger(__name__)
 
@@ -89,22 +90,42 @@ class Game:
         self.players.append(player)
         logger.info(f'Добавлен новый игрок {player.get_id()} с именем {player.name}')
 
-    def setup(self) -> None:
+    def _add_human_player(self) -> None:
+        player_name = self.input_handler.get_name()
+        new_player = HumanPlayer(name=player_name)
+        self.add_player(new_player)
+
+    def _add_ai_player(self) -> None:
+        ai_player = AIPlayer()
+        self.add_player(ai_player)
+
+    def _get_tokens_random(self) -> list[AND | XOR | IMP | OR]:
+        tokens = [random.choice([AND(), XOR(), IMP(), OR()]) for _ in range(settings.INITIAL_TOKENS)]
+        return tokens
+
+    def setup(self, multiplayer: bool = settings.MULTIPLAYER) -> None:
         """
         Запрашивает выбор токенов у игроков и инициализирует доску
         """
-        i = 1
-        while len(self.players) < settings.PLAYERS_AMOUNT:
-            self.display.show_prompt(f'Игрок {i}')
-            player_name = self.input_handler.get_name()
-            new_player = HumanPlayer(name=player_name)
-            self.add_player(new_player)
-            i += 1
+        if multiplayer:
+            i = 1
+            while len(self.players) < settings.PLAYERS_AMOUNT:
+                self.display.show_prompt(f'Игрок {i}')
+                self._add_human_player()
+                i += 1
+        else:
+            self.display.show_prompt(f'Игрок №1')
+            if not self.players: 
+                self._add_human_player()
+                self._add_ai_player()
 
         self.board.setup()
         for player in self.players:
             self.display.show_prompt(f'Выбор токенов для игрока: {player.name}')
-            tokens = self.input_handler.get_tokens()
+            if isinstance(player, HumanPlayer):
+                tokens = self.input_handler.get_tokens()
+            elif isinstance(player, AIPlayer):
+                tokens = self._get_tokens_random()
             player.set_tokens(tokens)
         logger.info('Игра инициализирована!')
 
@@ -143,7 +164,10 @@ class Game:
         self.display.show_prompt(f"Ваши токены: {[token.to_string() for token in player.tokens]}")
         
     def _get_info(self, player: Player) -> tuple[Token, int, int]:
-        token_idx, row, col = self.input_handler.get_move(player)
+        if isinstance(player, HumanPlayer):
+            token_idx, row, col = self.input_handler.get_move(player)
+        else:
+            token_idx, row, col = player.think(self.board)
         token = player.tokens[token_idx]
         return token, row, col
     
@@ -156,17 +180,23 @@ class Game:
     def end_round(self, debug) -> bool:
         self.display.display_board(self.board)
         winner = self.rules.check_winner(self.board, *self.players)
+        
         if winner:
-            self.display.show_prompt(f"Победитель: {winner.name}. Набрано: {winner.get_points()} очко")
+            self.display.show_prompt(f"Победитель: {winner.name}. Набрано: {winner.get_points()} очков")
         else:
             self.display.show_prompt(f"Ничья")
-
+        
         if not debug:
             for player in self.players:
                 player.reset_points()
         self.display.show_prompt(f"Конец игры")
 
+        if isinstance(self.get_current_player(), AIPlayer):
+            self.switch_player()
+
         newRound = self.input_handler.ask_play_again()
+
+        logger.debug(f"Играть снова? {newRound}")
         return newRound
 
     def handle_exception(self, 
