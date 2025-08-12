@@ -28,3 +28,5 @@ BOARD_SIZE = int(os.getenv('BOARD_SIZE', 3))
 INITIAL_TOKENS = int(os.getenv('INITIAL_TOKENS', 4))
 
 PLAYERS_AMOUNT = int(os.getenv('PLAYERS_AMOUNT', 2))
+
+AI_OPPONENT_DEFAULT = os.getenv('AI_OPPONENT_DEFAULT', 'Зевс')

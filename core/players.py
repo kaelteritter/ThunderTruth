@@ -5,6 +5,7 @@ import secrets
 import string
 from typing import Any
 
+from core import settings
 from core.exceptions import InvalidNameTypeError, TokenInvalidError
 from core.tokens import Token
 
@@ -87,12 +88,15 @@ class Player(ABC):
             )
         return True
 
-    @abstractmethod
     def add_token(self, token: Token) -> bool:
-        """
-        Добавить токен в свой набор для раунда
-        """
-        pass
+        self.tokens.append(token)
+        if token.get_owner() is not self:
+            token.set_owner(self)
+        logger.debug(
+            f"Игрок {self.name}:id_{self.get_id()} получил "
+            f"токен {token.to_string()} (token_id_{token.get_id()}"
+            )
+        return True
 
     @abstractmethod
     def pop_token(self, token: Token) -> Token:
@@ -101,9 +105,14 @@ class Player(ABC):
         """
         pass
 
-    @abstractmethod
     def add_points(self, points: int) -> None:
-        pass
+        self._points += points
+        if self._points < 0:
+            self._points = 0
+        logger.debug(
+            f'Игроку {self.get_id()} добавлено {points} очков.'
+            f'Текущие очки {self.get_id()}: {self.get_points()}'
+            )
 
     def get_points(self) -> int:
         return self._points
@@ -121,16 +130,6 @@ class HumanPlayer(Player):
         self._name = name or f'AnonymousPlayer_{self.get_id()}'
         
         logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
-
-    def add_token(self, token: Token) -> bool:
-        self.tokens.append(token)
-        if token.get_owner() is not self:
-            token.set_owner(self)
-        logger.debug(
-            f"Игрок {self.name}:id_{self.get_id()} получил "
-            f"токен {token.to_string()} (token_id_{token.get_id()}"
-            )
-        return True
     
     def _validate_pop_token(self, token):
         if not isinstance(token, Token):
@@ -179,14 +178,7 @@ class HumanPlayer(Player):
         if not self.get_id():
             self._id = self._generate_id(self.prefix)
 
-    def add_points(self, points: int) -> None:
-        self._points += points
-        if self._points < 0:
-            self._points = 0
-        logger.debug(
-            f'Игроку {self.get_id()} добавлено {points} очков.'
-            f'Текущие очки {self.get_id()}: {self.get_points()}'
-            )
+
 
 
 
@@ -196,12 +188,9 @@ class AIPlayer(Player):
         super().__init__(name)
         self.prefix = 'ai'
         self.make_id()
+        self._name = name or f'{settings.AI_OPPONENT_DEFAULT}'
         
         logger.debug(f"Игрок с именем {self.name} успешно создан (id_{self.get_id()})")
-
-    def add_token(self, token: Token) -> bool:
-        self.tokens.append(token)
-        return True
 
     def pop_token(self, token: Token) -> Token:
         return token
