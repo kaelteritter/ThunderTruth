@@ -200,7 +200,10 @@ class Game:
         self.setup()
 
     def play(self, debug=False):
-        self.display.show_prompt(f"Добро пожаловать в игру {settings.GAME_NAME}!")
+        self.display.show_start()
+        if not self.input_handler.ask_go_ahead():
+            self.display.show_prompt('До встречи!')
+            return
         
         while True:
             self.start_round()

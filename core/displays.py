@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import logging
 
+from core import settings
 from core.board import Board
 from core.players import Player
 
@@ -49,5 +50,14 @@ class ConsoleDisplay(Display):
         str_output = '\n'.join(map(lambda x: f'{x[0]}: {x[1]}', result_table.items()))
         print(
             f'Текущий счет:\n'
-            f'{str_output}'
+            f'{str_output}\n'
         )
+
+    def show_start(self):
+        print(
+            f"Добро пожаловать в игру {settings.GAME_NAME}!\n"
+            f"{''.join(self._get_rules())}\n{'=' * 75}\n")
+
+    def _get_rules(self):
+        with open('RULES.md', 'r') as f:
+            return f.readlines()

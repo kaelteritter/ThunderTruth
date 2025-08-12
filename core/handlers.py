@@ -118,5 +118,10 @@ class ConsoleInputHandler(InputHandler):
             logger.debug(f'Выбрана опция "Новый раунд"')
         return play_again != 'N'
     
+    def ask_go_ahead(self) -> bool:
+        self.display.show_prompt("Ну, что, начинаем игру? (Y/N) [Пропуск = да]: ")
+        answer = input().strip().upper()
+        return answer != 'N'
+    
 
 
