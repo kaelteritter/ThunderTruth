@@ -26,6 +26,24 @@ class Display(ABC):
     def show_score(self, players: list[Player]):
         pass
 
+    @abstractmethod
+    def show_now_turn(self, player: Player) -> None:
+        pass
+
+    @abstractmethod
+    def show_token_available(self, player: Player) -> None:
+        pass
+
+    @abstractmethod
+    def show_next_move_notification(self) -> None:
+        pass
+
+    @abstractmethod
+    def show_winner(self, winner: Player | None) -> None:
+        pass
+
+
+
 
 class ConsoleDisplay(Display):
     def display_board(self, board: Board) -> None:
@@ -64,3 +82,21 @@ class ConsoleDisplay(Display):
         rules = utils.get_path_compiling('RULES.md')
         with open(rules, 'r', encoding='utf-8') as f:
             return f.readlines()
+        
+    def show_now_turn(self, player: Player):
+        print(f"Ход игрока {player.get_color()}{Style.BRIGHT}{player.name}{Style.RESET_ALL}")
+        
+    def show_token_available(self, player: Player) -> None:
+        print(f'Ваши токены: {", ".join(token.to_string() for token in player.tokens)}')
+
+    def show_next_move_notification(self) -> None:
+        print(f'{Style.DIM}Следующий ход...{Style.RESET_ALL}')
+
+    def show_winner(self, winner: Player | None) -> None:
+        if winner:
+            print(
+                f'{Style.BRIGHT}Победитель: {winner.get_color()}{winner.name}{Style.RESET_ALL}. '
+                f'Набрано: {Style.BRIGHT}{winner.get_points()}{Style.RESET_ALL} очков\n'
+            )
+        else:
+            print(f"{Style.BRIGHT}Ничья{Style.RESET_ALL}")

@@ -163,10 +163,9 @@ class Game:
             self.display.show_prompt(f'Игрок {opponent.name} лишается 1 очка')
 
     def _turn_info(self, player: Player):
-        self.display.show_prompt(f"Ход игрока {player.get_color()}{Style.BRIGHT}{player.name}{Style.RESET_ALL}")
+        self.display.show_now_turn(player)
         self.display.display_board(self.board)
-        tokens_str = ", ".join(token.to_string() for token in player.tokens)
-        self.display.show_prompt(f"Ваши токены: [{tokens_str}]")
+        self.display.show_token_available(player)
         
     def _get_info(self, player: Player) -> tuple[Token, int, int]:
         if isinstance(player, HumanPlayer):
@@ -179,17 +178,13 @@ class Game:
     def end_turn(self, player: Player, token: Token):
         player.pop_token(token)
         self.display.show_score(self.players)
-        self.display.show_prompt(f'{Style.DIM}Следующий ход...{Style.RESET_ALL}')
+        self.display.show_next_move_notification()
         self.switch_player()
 
     def end_round(self, debug) -> bool:
         self.display.display_board(self.board)
         winner = self.rules.check_winner(self.board, *self.players)
-        
-        if winner:
-            self.display.show_prompt(f"{Style.BRIGHT}Победитель: {winner.get_color()}{winner.name}.{Style.RESET_ALL} Набрано: {Style.BRIGHT}{winner.get_points()}{Style.RESET_ALL} очков\n")
-        else:
-            self.display.show_prompt(f"{Style.BRIGHT}Ничья{Style.RESET_ALL}")
+        self.display.show_winner(winner)
         
         if not debug:
             for player in self.players:
