@@ -1,0 +1,47 @@
+name: Build Windows EXE
+
+on:
+  push:
+    tags:
+      - 'v*'  # Собираем только при пуше тега, например v1.0
+
+jobs:
+  build-exe:
+    runs-on: windows-latest  # Запускаем на Windows!
+
+    steps:
+      # 1. Скачиваем код
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Устанавливаем Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # 3. Устанавливаем зависимости
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller
+          pip install -r requirements.txt
+
+      # 4. Запускаем PyInstaller
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller \
+          -y \
+          --onefile \
+          --add-data="core:core" \
+          --add-data="RULES.md:." \
+          --add-data=".env:." \
+          --hidden-import=secrets \
+          --hidden-import=dotenv \
+          --hidden-import=colorama \
+          core/main.py
+
+      # 5. Выкладываем результат
+      - name: Upload EXE
+        uses: actions/upload-artifact@v3
+        with:
+          path: dist/thundertruth.exe
