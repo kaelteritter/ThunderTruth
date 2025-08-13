@@ -8,6 +8,8 @@ load_dotenv()
 
 # Разработка
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
+
 
 
 # Логгирование

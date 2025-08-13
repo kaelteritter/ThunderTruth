@@ -23,7 +23,7 @@ def colorize_token(func):
         else:
             color = Fore.WHITE
             # logger.warning(f"Токен {text} (id_{self.get_id()}) не имеет владельца, цвет: {Fore.WHITE}")
-        return f"{color}{text}{Style.RESET_ALL}"
+        return f"{color}{Style.BRIGHT}{text}{Style.RESET_ALL}"
     return wrapper
 
 

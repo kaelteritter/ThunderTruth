@@ -4,7 +4,7 @@ import logging
 import random
 from typing import Any
 
-from colorama import Fore
+from colorama import Fore, Style
 from core import settings
 from core.board import Board
 from core.displays import Display
@@ -125,7 +125,7 @@ class Game:
 
         self.board.setup()
         for player in self.players:
-            self.display.show_prompt(f'Выбор токенов для игрока: {player.name}')
+            self.display.show_prompt(f'Выбор токенов для игрока: {player.name}\n')
             if isinstance(player, HumanPlayer):
                 tokens = self.input_handler.get_tokens()
             elif isinstance(player, AIPlayer):
@@ -163,7 +163,7 @@ class Game:
             self.display.show_prompt(f'Игрок {opponent.name} лишается 1 очка')
 
     def _turn_info(self, player: Player):
-        self.display.show_prompt(f"Ход игрока {player.name}")
+        self.display.show_prompt(f"Ход игрока {player.get_color()}{Style.BRIGHT}{player.name}{Style.RESET_ALL}")
         self.display.display_board(self.board)
         tokens_str = ", ".join(token.to_string() for token in player.tokens)
         self.display.show_prompt(f"Ваши токены: [{tokens_str}]")
@@ -179,7 +179,7 @@ class Game:
     def end_turn(self, player: Player, token: Token):
         player.pop_token(token)
         self.display.show_score(self.players)
-        self.display.show_prompt(f'Следующий ход...')
+        self.display.show_prompt(f'{Style.DIM}Следующий ход...{Style.RESET_ALL}')
         self.switch_player()
 
     def end_round(self, debug) -> bool:
@@ -187,14 +187,14 @@ class Game:
         winner = self.rules.check_winner(self.board, *self.players)
         
         if winner:
-            self.display.show_prompt(f"Победитель: {winner.name}. Набрано: {winner.get_points()} очков")
+            self.display.show_prompt(f"{Style.BRIGHT}Победитель: {winner.get_color()}{winner.name}.{Style.RESET_ALL} Набрано: {Style.BRIGHT}{winner.get_points()}{Style.RESET_ALL} очков\n")
         else:
-            self.display.show_prompt(f"Ничья")
+            self.display.show_prompt(f"{Style.BRIGHT}Ничья{Style.RESET_ALL}")
         
         if not debug:
             for player in self.players:
                 player.reset_points()
-        self.display.show_prompt(f"Конец игры")
+        self.display.show_prompt(f"Конец игры!")
 
         if isinstance(self.get_current_player(), AIPlayer):
             self.switch_player()

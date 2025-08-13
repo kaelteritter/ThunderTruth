@@ -183,7 +183,7 @@ class AIPlayer(Player):
 
         row, col = random.choice(empty_cells)
         logger.debug(f'AI {self.name}:{self.get_id()} выбрал {row, col} из пустых клеток: {empty_cells}')
-        logger.warning(f'ВЫБРАНО РАНДОМОМ: Токен: {token_idx}, Координата: {row, col}')
+
         return token_idx - 1, row, col
 
 

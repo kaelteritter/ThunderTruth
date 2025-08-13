@@ -1,5 +1,6 @@
 # core/main.py
 import logging
+from logging.handlers import RotatingFileHandler
 
 import colorama
 from core.board import Board
@@ -9,18 +10,36 @@ from core.displays import ConsoleDisplay
 from core.game import Game
 from core import settings
 
+
 def setup_logging():
     """
-    Настраивает логирование для отладки
+    Настраивает логирование в зависимости от режима (DEBUG или PRODUCTION)
     """
-    logging.basicConfig(
-        level=settings.LOGGING_LEVEL,
-        format=settings.LOGGING_FORMAT,
-        handlers=[
-            logging.StreamHandler()
-        ],
-        datefmt=settings.LOGGING_DATEFMT
-    )
+    logger = logging.getLogger()
+    logger.setLevel(settings.LOGGING_LEVEL)
+    log_format = logging.Formatter(settings.LOGGING_FORMAT, datefmt=settings.LOGGING_DATEFMT)
+    
+    # Очищаем существующие хендлеры, чтобы избежать дублирования
+    logger.handlers.clear()
+    
+    if settings.PRODUCTION:
+        # В боевом режиме логи только в файл
+        file_handler = RotatingFileHandler(
+            'game.log',
+            maxBytes=5*1024*1024,  # 5 MB
+            backupCount=3  # Хранить до 3 архивных логов
+        )
+        file_handler.setLevel(settings.LOGGING_LEVEL)
+        file_handler.setFormatter(log_format)
+        logger.addHandler(file_handler)
+    else:
+        # В режиме разработки логи в консоль
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(settings.LOGGING_LEVEL)
+        stream_handler.setFormatter(log_format)
+        logger.addHandler(stream_handler)
+    
+    logging.info("Инициализация логирования завершена")
 
 def main():
     """

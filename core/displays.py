@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 import logging
 
+from colorama import Style
+
 from core import settings
 from core.board import Board
 from core.players import Player
@@ -49,13 +51,13 @@ class ConsoleDisplay(Display):
         result_table = {player.name:player.get_points() for player in players}
         str_output = '\n'.join(map(lambda x: f'{x[0]}: {x[1]}', result_table.items()))
         print(
-            f'Текущий счет:\n'
-            f'{str_output}\n'
+            f'{Style.BRIGHT}Текущий счет:\n'
+            f'{str_output}{Style.RESET_ALL}\n'
         )
 
     def show_start(self):
         print(
-            f"Добро пожаловать в игру {settings.GAME_NAME}!\n"
+            f"Добро пожаловать в игру {Style.BRIGHT}{settings.GAME_NAME}{Style.RESET_ALL}!\n"
             f"{''.join(self._get_rules())}\n{'=' * 75}\n")
 
     def _get_rules(self):
