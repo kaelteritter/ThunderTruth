@@ -4,7 +4,7 @@ import logging
 
 from colorama import Style
 
-from core import settings
+from core import settings, utils
 from core.board import Board
 from core.players import Player
 
@@ -61,5 +61,6 @@ class ConsoleDisplay(Display):
             f"{''.join(self._get_rules())}\n{'=' * 75}\n")
 
     def _get_rules(self):
-        with open('RULES.md', 'r') as f:
+        rules = utils.get_path_compiling('RULES.md')
+        with open(rules, 'r', encoding='utf-8') as f:
             return f.readlines()

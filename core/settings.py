@@ -4,7 +4,9 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()
+from core import utils
+
+load_dotenv(utils.get_path_compiling('.env'))
 
 # Разработка
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
