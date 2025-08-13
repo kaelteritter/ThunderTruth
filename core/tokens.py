@@ -3,6 +3,8 @@ from abc import abstractmethod
 import logging
 import secrets
 import string
+
+from colorama import Fore, Style
 from core.elements import Element
 from core.exceptions import InvalidOperandError
 from core.operands import Operand
@@ -10,6 +12,20 @@ from core.operands import Operand
 
 
 logger = logging.getLogger(__name__)
+
+def colorize_token(func):
+    def wrapper(self, *args, **kwargs) -> str:
+        text = func(self, *args, **kwargs)
+        owner = self.get_last_owner()
+        if owner:
+            color = owner.get_color()
+            # logger.warning(f"Токен {text} (id_{self.get_id()}) имеет владельца {owner.name} (id_{owner.get_id()}), цвет: {color}")
+        else:
+            color = Fore.WHITE
+            # logger.warning(f"Токен {text} (id_{self.get_id()}) не имеет владельца, цвет: {Fore.WHITE}")
+        return f"{color}{text}{Style.RESET_ALL}"
+    return wrapper
+
 
 class Token(Element):
     """
@@ -120,6 +136,7 @@ class AND(Token):
             (False, False): False,
         }
     
+    @colorize_token
     def to_string(self) -> str:
         return '^'
 
@@ -138,6 +155,7 @@ class OR(Token):
             (False, False): False,
         }
     
+    @colorize_token
     def to_string(self) -> str:
         return 'v'
 
@@ -155,6 +173,7 @@ class XOR(Token):
             (False, False): False,
         }
     
+    @colorize_token
     def to_string(self) -> str:
         return '⊕'
 
@@ -173,6 +192,7 @@ class IMP(Token):
             (False, False): True,
         }
     
+    @colorize_token
     def to_string(self) -> str:
         return '⇒'
 

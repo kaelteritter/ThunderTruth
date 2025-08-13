@@ -3,6 +3,8 @@
 import logging
 import random
 from typing import Any
+
+from colorama import Fore
 from core import settings
 from core.board import Board
 from core.displays import Display
@@ -93,10 +95,12 @@ class Game:
     def _add_human_player(self) -> None:
         player_name = self.input_handler.get_name()
         new_player = HumanPlayer(name=player_name)
+        setattr(new_player, 'color', Fore.CYAN)
         self.add_player(new_player)
 
     def _add_ai_player(self) -> None:
         ai_player = AIPlayer()
+        setattr(ai_player, 'color', Fore.RED)
         self.add_player(ai_player)
 
     def _get_tokens_random(self) -> list[AND | XOR | IMP | OR]:
@@ -161,7 +165,8 @@ class Game:
     def _turn_info(self, player: Player):
         self.display.show_prompt(f"Ход игрока {player.name}")
         self.display.display_board(self.board)
-        self.display.show_prompt(f"Ваши токены: {[token.to_string() for token in player.tokens]}")
+        tokens_str = ", ".join(token.to_string() for token in player.tokens)
+        self.display.show_prompt(f"Ваши токены: [{tokens_str}]")
         
     def _get_info(self, player: Player) -> tuple[Token, int, int]:
         if isinstance(player, HumanPlayer):

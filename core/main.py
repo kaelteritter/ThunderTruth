@@ -1,5 +1,7 @@
 # core/main.py
 import logging
+
+import colorama
 from core.board import Board
 from core.rules import ThunderTruthRules
 from core.handlers import ConsoleInputHandler

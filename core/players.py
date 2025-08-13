@@ -144,6 +144,9 @@ class Player(ABC):
         self._points = 0
         logger.debug(f'Игрок {self.get_id()}: очки сброшены')
 
+    def get_color(self):
+        return getattr(self, 'color')
+
 
 class HumanPlayer(Player):
     def __init__(self, name: str | None = None) -> None:
