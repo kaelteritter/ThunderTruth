@@ -31,10 +31,11 @@ jobs:
         run: |
           pyinstaller \
           -y \
+          --name=thundertruth \
           --onefile \
-          --add-data="core:core" \
-          --add-data="RULES.md:." \
-          --add-data=".env:." \
+          --add-data="core;core" \
+          --add-data="RULES.md;." \
+          --add-data=".env;." \
           --hidden-import=secrets \
           --hidden-import=dotenv \
           --hidden-import=colorama \
