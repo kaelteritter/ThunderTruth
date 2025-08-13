@@ -28,6 +28,7 @@ jobs:
 
       # 4. Запускаем PyInstaller
       - name: Build EXE with PyInstaller
+        shell: cmd
         run: |
           pyinstaller ^
           -y ^
