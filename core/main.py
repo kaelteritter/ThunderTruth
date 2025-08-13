@@ -2,6 +2,8 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
+import colorama
+
 from core.board import Board
 from core.rules import ThunderTruthRules
 from core.handlers import ConsoleInputHandler
@@ -44,6 +46,7 @@ def main():
     """
     Точка входа для игры
     """
+    colorama.init(strip=False)
     setup_logging()
     logger = logging.getLogger(__name__)
     logger.info("Запуск игры")
