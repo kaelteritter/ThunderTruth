@@ -1,6 +1,8 @@
 # core/main.py
+import io
 import logging
 from logging.handlers import RotatingFileHandler
+import sys
 
 import colorama
 
@@ -46,6 +48,7 @@ def main():
     """
     Точка входа для игры
     """
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     colorama.init(strip=False)
     setup_logging()
     logger = logging.getLogger(__name__)
