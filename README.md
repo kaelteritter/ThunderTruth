@@ -6,7 +6,7 @@
 ## Установка консольной версии
 1. Клонировать репозиторий: <br>
 ```
-git clone <repo-url>
+git clone https://github.com/kaelteritter/ThunderTruth.git
 ```
 2. Создать и активировать виртуальное окружение:
 > **MacOS:**
