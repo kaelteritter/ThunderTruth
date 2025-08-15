@@ -175,7 +175,7 @@ class XOR(Token):
     
     @colorize_token
     def to_string(self) -> str:
-        return '⊕'
+        return '[x]'
 
 
 class IMP(Token):
@@ -194,5 +194,5 @@ class IMP(Token):
     
     @colorize_token
     def to_string(self) -> str:
-        return '⇒'
+        return '=>'
 
