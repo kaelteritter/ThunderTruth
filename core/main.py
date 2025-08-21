@@ -51,19 +51,6 @@ def main():
     """
     if sys.platform == "win32":
         os.system("chcp 65001 > nul")
-        
-        try:
-            sys.stdout.reconfigure(encoding='utf-8')
-        except Exception as e:
-            # Можно записать в лог, но НЕ останавливать приложение
-            pass
-
-        try:
-            sys.stderr.reconfigure(encoding='utf-8')
-        except Exception as e:
-            pass
-    import time
-    time.sleep(0.1)  # Дать системе время инициализировать консоль
     colorama.init(strip=False)
     setup_logging()
     logger = logging.getLogger(__name__)
