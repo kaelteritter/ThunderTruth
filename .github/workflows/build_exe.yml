@@ -56,7 +56,7 @@ jobs:
       - name: Simulate input via pipe
         shell: cmd
         run: |
-          (echo Y & echo xor & echo imp & echo or & echo and) | .\dist\thundertruth.exe
+          (echo Y & echo testplayer & echo xor & echo imp & echo or & echo and) | .\dist\thundertruth.exe
           if %errorlevel% neq 0 exit /b %errorlevel%
 
 
