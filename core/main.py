@@ -45,6 +45,32 @@ def setup_logging():
     
     logging.info("Инициализация логирования завершена")
 
+
+class SafeWriter:
+    def __init__(self, stream):
+        self.stream = stream
+
+    def write(self, data):
+        try:
+            return self.stream.write(data)
+        except (OSError, IOError) as e:
+            if getattr(e, 'winerror', None) == 31:
+                return 0  # Игнорируем "устройство не работает"
+            raise
+        except Exception:
+            return 0
+
+    def flush(self):
+        try:
+            if hasattr(self.stream, 'flush'):
+                self.stream.flush()
+        except (OSError, IOError):
+            pass
+
+    def __getattr__(self, name):
+        return getattr(self.stream, name)
+    
+
 def setup_os():
     if sys.platform == "win32":
         try:
@@ -64,6 +90,13 @@ def setup_os():
             sys.stderr.reconfigure(encoding='utf-8')
         except Exception as e:
             print(f"Warning: failed to reconfigure stderr: {e}")
+
+        try:
+            sys.stdout = SafeWriter(sys.stdout)
+            sys.stderr = SafeWriter(sys.stderr)
+        except Exception:
+            pass
+   
 
 def main():
     """
