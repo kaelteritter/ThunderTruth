@@ -45,12 +45,31 @@ def setup_logging():
     
     logging.info("Инициализация логирования завершена")
 
+def setup_os():
+    if sys.platform == "win32":
+        try:
+            # Переключаем консоль на UTF-8
+            import subprocess
+            subprocess.run("chcp 65001", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except Exception as e:
+            print(f"Warning: failed to set chcp 65001: {e}")
+
+        # Принудительно переконфигурируем stdout/stderr
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception as e:
+            print(f"Warning: failed to reconfigure stdout: {e}")
+
+        try:
+            sys.stderr.reconfigure(encoding='utf-8')
+        except Exception as e:
+            print(f"Warning: failed to reconfigure stderr: {e}")
+
 def main():
     """
     Точка входа для игры
     """
-    if sys.platform == "win32":
-        os.system("chcp 65001 > nul")
+    setup_os()
     colorama.init(strip=False)
     setup_logging()
     logger = logging.getLogger(__name__)
