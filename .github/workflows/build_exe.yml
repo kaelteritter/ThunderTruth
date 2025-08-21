@@ -52,6 +52,18 @@ jobs:
           .\dist\thundertruth.exe
           echo EXE запущен и завершен
 
+      # 6. Тестируем с имитацией ввода: Y, xor, imp, or, and — чтобы вывелись токены
+      - name: Simulate input and check UTF-8 token display
+        shell: cmd
+        run: |
+          echo Y > input.txt
+          echo xor >> input.txt
+          echo imp >> input.txt
+          echo or >> input.txt
+          echo and >> input.txt
+          .\dist\thundertruth.exe < input.txt
+          del input.txt
+
 
       # 6. Выкладываем результат
       - name: Upload EXE
