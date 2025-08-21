@@ -53,28 +53,11 @@ jobs:
           echo EXE запущен и завершен
 
       # 6. Тестируем с имитацией ввода: Y, xor, imp, or, and — чтобы вывелись токены
-      - name: Simulate input with full debug
+      - name: Simulate input via pipe
         shell: cmd
         run: |
-          echo Y > input.txt
-          echo xor >> input.txt
-          echo imp >> input.txt
-          echo or >> input.txt
-          echo and >> input.txt
-
-          echo === input.txt ===
-          type input.txt
-
-          echo Запускаем .\dist\thundertruth.exe
-          .\dist\thundertruth.exe < input.txt
-          echo Exit code: %errorlevel%
-
-          if %errorlevel% neq 0 (
-            echo "Приложение завершилось с ошибкой"
-            exit /b 1
-          )
-
-          del input.txt
+          (echo Y & echo xor & echo imp & echo or & echo and) | .\dist\thundertruth.exe
+          if %errorlevel% neq 0 exit /b %errorlevel%
 
 
       # 7. Выкладываем результат
