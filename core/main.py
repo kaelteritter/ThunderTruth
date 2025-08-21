@@ -51,8 +51,18 @@ def main():
     """
     if sys.platform == "win32":
         os.system("chcp 65001 > nul")
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+        try:
+            sys.stdout.reconfigure(encoding='utf-8') if hasattr(sys.stdout, 'reconfigure') \
+                else setattr(sys.stdout, 'buffer', io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8'))
+        except (OSError, AttributeError, ValueError):
+            pass
+
+        try:
+            sys.stderr.reconfigure(encoding='utf-8') if hasattr(sys.stderr, 'reconfigure') \
+                else setattr(sys.stderr, 'buffer', io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8'))
+        except (OSError, AttributeError, ValueError):
+            pass
     colorama.init(strip=False)
     setup_logging()
     logger = logging.getLogger(__name__)
