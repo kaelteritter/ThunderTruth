@@ -14,6 +14,7 @@ from core.game import Game
 from core import settings
 
 
+
 def setup_logging():
     """
     Настраивает логирование в зависимости от режима (DEBUG или PRODUCTION)
@@ -48,7 +49,10 @@ def main():
     """
     Точка входа для игры
     """
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    if sys.platform == "win32":
+        os.system("chcp 65001 > nul")
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
     colorama.init(strip=False)
     setup_logging()
     logger = logging.getLogger(__name__)
