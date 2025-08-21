@@ -53,7 +53,7 @@ jobs:
           echo EXE запущен и завершен
 
       # 6. Тестируем с имитацией ввода: Y, xor, imp, or, and — чтобы вывелись токены
-      - name: Simulate input and check UTF-8 token display
+      - name: Simulate input with full debug
         shell: cmd
         run: |
           echo Y > input.txt
@@ -61,11 +61,23 @@ jobs:
           echo imp >> input.txt
           echo or >> input.txt
           echo and >> input.txt
+
+          echo === input.txt ===
+          type input.txt
+
+          echo Запускаем .\dist\thundertruth.exe
           .\dist\thundertruth.exe < input.txt
+          echo Exit code: %errorlevel%
+
+          if %errorlevel% neq 0 (
+            echo "Приложение завершилось с ошибкой"
+            exit /b 1
+          )
+
           del input.txt
 
 
-      # 6. Выкладываем результат
+      # 7. Выкладываем результат
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
