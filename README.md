@@ -4,11 +4,49 @@
 против могучего Зевса.
 
 ## Установка консольной версии (v1.0)
+### Вариант 1. Через Docker-образ.
+1. Убедитесь, что у вас установлен [Docker](https://docs.docker.com/get-docker/).<br>
+Для Windows также: установить [Windows Terminal](https://apps.microsoft.com/detail/9n0dx20hk701?hl=en-US&gl=US)
+2. Создайте директорию с файлами-настройками: <br>
+#### Mac OS
+```
+mkdir -p app/
+touch app/.env
+touch app/game.log
+```
+#### Windows
+Через CMD:
+```
+mkdir app 2>nul
+echo. > app\.env
+echo. > app\game.log
+```
+3. Запустите Docker Dekstop и Docker-контейнер
+#### Mac OS
+```
+docker run -it \
+  -v ./app/.env:/app/.env \
+  -v ./app/game.log:/app/game.log \
+  ghcr.io/kaelteritter/thundertruth:latest
+```
+#### Windows
+Через Windows Terminal (Win+R -> wt):
+```
+$newPath = Get-Location | Select-Object -ExpandProperty Path
+docker run -it `
+  -v "$newPath\app\.env:/app/.env" `
+  -v "$newPath\app\game.log:/app/game.log" `
+  ghcr.io/kaelteritter/thundertruth:latest
+```
+**Примечание**: не забудьте поменять [настройки](#настройки-игры) для
+правильного вывода логов, размера доски и пр.
+
+### Вариант 2. Через виртуальное окружение
 > Внимание для пользователей Windows! Символы токенов отображаются в кодировке UTF-8. 
 Интерфейс был протестирован на удаленном сервере с соверменной Windows в оболочке cmd.
-В старых версиях cmd.exe utf-8 плохо интегрируется и не всегда передает цвета.
-В случае неправильного отображения попробуйте использовать powershell.
-
+В старых версиях cmd.exe utf-8 плохо интегрируется и не всегда передает кириллические символы и цвета.
+В случае неправильного отображения попробуйте использовать powershell или [Windows Terminal](https://apps.microsoft.com/detail/9n0dx20hk701?hl=en-US&gl=US).
+Или используйте вариант установки [Docker + Windows Terminal](#вариант-1-через-docker-образ) (протестировано вручную).
 
 1. Клонировать репозиторий: <br>
 ```
@@ -61,5 +99,6 @@ python -m core.main
 
 ## Разработка
 - Tестирование: Unittest, GitHub Actions
+- Контейниризация: Docker-образ на [ghcr.io](https://github.com/kaelteritter/ThunderTruth/pkgs/container/thundertruth)
 - Стиль кода: PEP 8
 - Зависимости: Указаны в `requirements.txt`
